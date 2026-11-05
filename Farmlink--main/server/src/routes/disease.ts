@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import multer from 'multer';
+import { rateLimit } from 'express-rate-limit';
+import { authenticate } from '../middleware/auth.js';
+import { HttpError } from '../middleware/errors.js';
+import { analyzePlantImage } from '../services/ai.js';
+const router=Router();const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:5*1024*1024,files:1},fileFilter:(_req,file,cb)=>cb(null,['image/jpeg','image/png','image/webp'].includes(file.mimetype))});
+router.use(authenticate,rateLimit({windowMs:60_000,limit:5,standardHeaders:true,legacyHeaders:false}));
+router.post('/analyze',upload.single('image'),async(req,res,next)=>{try{const file=req.file;if(!file)throw new HttpError(400,'Upload one JPEG, PNG or WebP plant image up to 5 MB.');const b=file.buffer;const valid=file.mimetype==='image/jpeg'?b[0]===0xff&&b[1]===0xd8&&b[b.length-2]===0xff&&b[b.length-1]===0xd9:file.mimetype==='image/png'?b.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])):b.subarray(0,4).toString()==='RIFF'&&b.subarray(8,12).toString()==='WEBP';if(!valid)throw new HttpError(400,'The uploaded file does not match its image type.');const symptoms=String(req.body.symptoms||'').slice(0,1200);const assessment=await analyzePlantImage(b.toString('base64'),file.mimetype,symptoms);res.json({assessment,disclaimer:'Preliminary AI image assessment only. This is not a confirmed diagnosis. Consult an agricultural extension officer for serious or spreading crop damage.'})}catch(e){next(e)}});
+export default router;

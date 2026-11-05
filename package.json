@@ -1,0 +1,9 @@
+{
+  "name": "farmlink-launcher",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix Farmlink--main run dev",
+    "build": "npm --prefix Farmlink--main run build",
+    "lint": "npm --prefix Farmlink--main run lint"
+  }
+}

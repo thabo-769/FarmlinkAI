@@ -1,0 +1,47 @@
+{
+  "name": "farmlink-ai",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -n client,server -c green,blue \"npm:dev --workspace client\" \"npm:dev --workspace server\"",
+    "build": "npm run build --workspace client && npm run build --workspace server",
+    "lint": "npm run lint --workspace client && npm run lint --workspace server"
+  },
+  "overrides": {
+    "rollup": "$rollup"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.10.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.16",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "rollup": "npm:@rollup/wasm-node@4.67.5",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.19.1",
+    "vite": "^6.0.7"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.49.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "firebase": "^13.1.0",
+    "firebase-admin": "^14.5.0",
+    "helmet": "^8.0.0",
+    "multer": "^1.4.5-lts.1",
+    "zod": "^3.24.1"
+  }
+}

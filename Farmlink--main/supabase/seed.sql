@@ -1,0 +1,2 @@
+-- Intentionally no sample market prices or fabricated live data are seeded.
+-- Add only verified records with source, currency, market, and observation date.
