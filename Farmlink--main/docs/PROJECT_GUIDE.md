@@ -60,7 +60,7 @@ Requirements: Node.js 20 or newer and npm.
 3. Set `VITE_API_URL` for the browser. For local development it should be `http://localhost:4000/api/v1`.
 4. Set `VITE_FIREBASE_*` values only if using a real Firebase project. Without them, the client enables demo sign-in.
 5. Set server-side `FIREBASE_PROJECT_ID` and credentials suitable for Firebase Admin if verifying real Firebase ID tokens. The current Admin initialization specifies a project ID but does not load a service-account key explicitly; deployment must provide supported Google application credentials.
-6. Optional integrations: configure `AI_PROVIDER`, `AI_MODEL`, and `AI_API_KEY`; set `WEATHER_API_KEY` for weather. These keys belong only on the server.
+6. Configure `AI_PROVIDER=openai-compatible`, a vision-capable `AI_MODEL` (for example `gpt-4o-mini`), and `AI_API_KEY` on the server for crop-image analysis and assistant responses. On Vercel, add these as project environment variables and redeploy. Set `WEATHER_API_KEY` for weather. Provider keys belong only on the server.
 7. Run `npm run dev`. The Vite client uses port 5173 and Express uses port 4000 by default.
 
 Useful root scripts:
@@ -199,7 +199,7 @@ The browser initializes Firebase from `VITE_FIREBASE_*`. The auth context observ
 
 ### AI provider
 
-`server/src/services/ai.ts` sends a provider-compatible request using `AI_PROVIDER`, `AI_MODEL`, and `AI_API_KEY`. Chat is text based. Disease analysis sends image content and symptoms to the model. The result is explicitly preliminary guidance, not a confirmed diagnosis; serious crop issues should be reviewed by an extension officer.
+`server/src/services/ai.ts` sends a provider-compatible request using `AI_PROVIDER`, `AI_MODEL`, and `AI_API_KEY`. Chat is text based. Disease analysis sends the uploaded image and symptom notes to the configured vision-capable model and returns its preliminary assessment. If the provider is not configured or fails, the API reports an error instead of returning generic advice as if the image had been analyzed. The result is not a confirmed diagnosis; serious crop issues should be reviewed by an extension officer.
 
 ### Weather provider
 

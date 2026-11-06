@@ -1,5 +1,5 @@
-import { useState, useRef, type FormEvent } from 'react';
-import { CircleAlert, Check, ScanLine, ShieldCheck, Upload, Camera, X, RefreshCw } from 'lucide-react';
+import { useEffect, useState, useRef, type FormEvent } from 'react';
+import { CircleAlert, Check, ScanLine, ShieldCheck, Upload, Camera, X } from 'lucide-react';
 import { PageTitle } from '../components';
 import { uploadApi } from '../services/api';
 
@@ -10,12 +10,27 @@ export function CropHealth() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState('');
   const [error, setError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Camera capture modal state
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    if (previewUrl) return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+
+  useEffect(() => {
+    if (videoRef.current && stream) videoRef.current.srcObject = stream;
+  }, [stream, isCameraOpen]);
+
+  useEffect(
+    () => () => {
+      stream?.getTracks().forEach((track) => track.stop());
+    },
+    [stream],
+  );
 
   function selectFile(f?: File) {
     setResult('');
@@ -26,10 +41,14 @@ export function CropHealth() {
       return;
     }
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(f.type)) {
+      setFile(null);
+      setPreviewUrl('');
       setError('Choose a JPEG, PNG, or WebP image.');
       return;
     }
     if (f.size > 5 * 1024 * 1024) {
+      setFile(null);
+      setPreviewUrl('');
       setError('Choose an image smaller than 5 MB.');
       return;
     }
@@ -37,7 +56,6 @@ export function CropHealth() {
     setPreviewUrl(URL.createObjectURL(f));
   }
 
-  // Camera handlers
   async function openCamera() {
     setError('');
     try {
@@ -47,19 +65,14 @@ export function CropHealth() {
       });
       setStream(mediaStream);
       setIsCameraOpen(true);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-    } catch (err: any) {
+    } catch {
       setError('Unable to access device camera. Please check camera permissions in your browser or use the file upload option.');
     }
   }
 
   function stopCamera() {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-    }
+    stream?.getTracks().forEach((track) => track.stop());
+    setStream(null);
     setIsCameraOpen(false);
   }
 
@@ -68,8 +81,13 @@ export function CropHealth() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || !video.videoWidth || !video.videoHeight) {
+      setError('The camera is not ready yet. Please wait a moment and try again.');
+      return;
+    }
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     if (ctx) {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -80,8 +98,12 @@ export function CropHealth() {
           });
           selectFile(capturedFile);
           stopCamera();
+        } else {
+          setError('The photo could not be captured. Please try again or upload an image.');
         }
       }, 'image/jpeg', 0.9);
+    } else {
+      setError('The camera is not ready yet. Please wait a moment and try again.');
     }
   }
 
@@ -115,7 +137,7 @@ export function CropHealth() {
       <div className="notice demo-notice">
         <ShieldCheck size={17} />
         <span>
-          <b>Preliminary guidance only.</b> Image assessments can be wrong and are not confirmed diagnoses. For serious or spreading crop damage, contact an AGRITEX extension officer.
+          <b>Preliminary guidance only.</b> A vision-enabled AI model must be configured on the server for image analysis. Results can be wrong and are not confirmed diagnoses. For serious or spreading crop damage, contact an AGRITEX extension officer.
         </span>
       </div>
 
@@ -124,7 +146,6 @@ export function CropHealth() {
           <div className="field">
             <span>Plant photo <i>*</i></span>
             
-            {/* Action buttons: Take a photo or Upload */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
               <button
                 type="button"
@@ -161,18 +182,21 @@ export function CropHealth() {
                   accept="image/jpeg,image/png,image/webp"
                   capture="environment"
                   style={{ display: 'none' }}
-                  onChange={(e) => selectFile(e.target.files?.[0])}
+                  ref={fileInputRef}
+                  onChange={(e) => {
+                    selectFile(e.currentTarget.files?.[0]);
+                    e.currentTarget.value = '';
+                  }}
                 />
               </label>
             </div>
 
-            {/* Photo preview or drop container */}
             {previewUrl ? (
               <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '2px solid #087443', maxHeight: '280px' }}>
                 <img src={previewUrl} alt="Captured crop" style={{ width: '100%', height: '240px', objectFit: 'cover' }} />
                 <div style={{ position: 'absolute', bottom: '10px', left: '10px', right: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', padding: '8px 12px', borderRadius: '8px', color: '#fff', fontSize: '12px' }}>
                   <span><b>{file?.name}</b></span>
-                  <button type="button" onClick={() => { setFile(null); setPreviewUrl(''); }} style={{ background: 'none', border: 'none', color: '#ffb4b4', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <button type="button" onClick={() => { selectFile(); if (fileInputRef.current) fileInputRef.current.value = ''; }} style={{ background: 'none', border: 'none', color: '#ffb4b4', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <X size={15} /> Remove
                   </button>
                 </div>
@@ -182,7 +206,11 @@ export function CropHealth() {
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
-                  onChange={(e) => selectFile(e.target.files?.[0])}
+                  ref={fileInputRef}
+                  onChange={(e) => {
+                    selectFile(e.currentTarget.files?.[0]);
+                    e.currentTarget.value = '';
+                  }}
                 />
                 <span className="upload-symbol"><Camera size={26} /></span>
                 <b>Take a photo or choose an image of the plant</b>
@@ -229,7 +257,7 @@ export function CropHealth() {
         </aside>
 
         {result && (
-          <section className="panel crop-result" style={{ gridColumn: '1 / -1', marginTop: '20px' }}>
+          <section className="panel crop-result" style={{ gridColumn: '1 / -1', marginTop: '20px' }} aria-live="polite">
             <span className="section-kicker">PRELIMINARY FIELD ASSESSMENT</span>
             <pre style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, fontFamily: 'inherit' }}>{result}</pre>
           </section>
@@ -248,7 +276,6 @@ export function CropHealth() {
             />
             <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-            {/* Target box guide */}
             <div style={{ position: 'absolute', top: '15%', left: '15%', right: '15%', bottom: '25%', border: '2px dashed rgba(255,255,255,0.7)', borderRadius: '12px', pointerEvents: 'none' }} />
 
             <div style={{ padding: '16px 20px', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

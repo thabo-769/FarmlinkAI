@@ -1,6 +1,7 @@
 {
   "name": "farmlink-launcher",
   "private": true,
+  "type": "module",
   "scripts": {
     "postinstall": "npm --prefix Farmlink--main install --include=dev",
     "dev": "npm --prefix Farmlink--main run dev",

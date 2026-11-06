@@ -66,23 +66,13 @@ export async function answerAgriculture(message: string) {
 }
 
 export async function analyzePlantImage(imageData: string, mimeType: string, symptoms: string) {
-  if (!config.aiApiKey || !config.aiProvider || !config.aiModel || config.aiProvider !== 'openai-compatible') {
-    return `**Preliminary Plant Health Assessment:**
-Based on the symptom report ("${symptoms || 'Visual observation supplied'}"):
-
-1. **Possible Causes:**
-   - Early Blight / Leaf Spot (Alternaria or Cercospora fungal pathogens), commonly aggravated by high humidity or overhead irrigation.
-   - Nutrient deficiency (e.g. Nitrogen or Potassium chlorosis) if discoloration is focused on older bottom foliage.
-   - Pests such as aphids or red spider mites causing leaf stippling and curling.
-
-2. **Immediate Recommendations:**
-   - Isolate or prune severely affected lower leaves and dispose of them away from the field.
-   - Avoid watering directly on leaves in late afternoon to reduce leaf wetness duration.
-   - Inspect the underside of leaves with a hand lens to look for pests or fungal spores.
-
-3. **Next Steps:**
-   - Take a live sample to your nearest AGRITEX extension officer or local agricultural research station for physical examination before applying chemical fungicides or pesticides.`;
+  if (!config.aiApiKey || !config.aiModel || config.aiProvider !== 'openai-compatible') {
+    throw new HttpError(
+      503,
+      'Crop image analysis is not configured. Ask the administrator to set AI_PROVIDER=openai-compatible, AI_MODEL, and AI_API_KEY on the server.',
+    );
   }
+
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -93,31 +83,39 @@ Based on the symptom report ("${symptoms || 'Visual observation supplied'}"):
       body: JSON.stringify({
         model: config.aiModel,
         temperature: 0.2,
-        max_tokens: 700,
+        max_tokens: 900,
         messages: [
           {
             role: 'system',
             content:
-              'You provide preliminary crop-health information for Zimbabwean farmers from a plant image and user symptom notes. Never diagnose with certainty. State that image-based suggestions can be wrong and require local confirmation. Give (1) possible causes with uncertainty, (2) safe immediate observations/actions, (3) prevention and next steps. Avoid hazardous pesticide dosing. For serious or spreading damage, recommend contacting an agricultural extension officer and do not delay professional help.',
+              'You are a cautious crop-health assistant for farmers in Zimbabwe. Examine the supplied plant image itself and use the user notes as context. If the image does not clearly show a plant or affected area, say so and request a clearer close-up rather than guessing. Give a concise preliminary assessment with: (1) visible signs, (2) possible causes and confidence (low/medium/high), clearly separating alternatives, (3) safe immediate checks/actions, and (4) prevention and next steps. Ask for crop type or field context only when it would materially improve the assessment. Never claim a confirmed diagnosis, invent visual details, or recommend pesticide products or dosage. State that image-based suggestions need local confirmation. For severe or spreading damage, advise prompt contact with an AGRITEX extension officer.',
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: `Crop symptoms/context: ${symptoms || 'No additional symptoms supplied.'}. Please provide a cautious preliminary assessment.`,
+                text: `Farmer's crop and symptom notes: ${symptoms || 'No additional symptoms supplied.'}. Assess the attached image and notes as a preliminary screening.`,
               },
               { type: 'image_url', image_url: { url: `data:${mimeType};base64,${imageData}` } },
             ],
           },
         ],
       }),
+      signal: AbortSignal.timeout(30_000),
     });
-    if (!response.ok) throw new Error('AI upstream error');
+    if (!response.ok) {
+      throw new HttpError(502, 'Crop analysis could not be completed by the AI provider. Please try again later.');
+    }
+
     const data = (await response.json()) as { choices?: { message?: { content?: string } }[] };
-    return data.choices?.[0]?.message?.content || 'No response returned from model.';
-  } catch {
-    return `**Preliminary Assessment:** Symptoms noted: ${symptoms || 'None supplied'}. For reliable diagnosis under local field conditions, please share this plant with your local AGRITEX officer.`;
+    const assessment = data.choices?.[0]?.message?.content?.trim();
+    if (!assessment) {
+      throw new HttpError(502, 'The AI provider returned no crop assessment. Please try again.');
+    }
+    return assessment;
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    throw new HttpError(502, 'Crop analysis could not reach the AI provider. Please check the server connection and try again.');
   }
 }
-
