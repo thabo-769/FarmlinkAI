@@ -2071,7 +2071,7 @@ h1, h2, h3, h4, h5, h6 {
   inset: 0;
   background: radial-gradient(ellipse at 70% 50%, rgba(200,240,122,.07) 0%, transparent 70%);
 }
-.cta-section h2 { font-size: 36px; font-weight: 900; letter-spacing: -1.2px; margin: 0 0 14px; position: relative; }
+.cta-section h2 { font-size: 36px; font-weight: 900; letter-spacing: -1.2px; margin: 0 0 14px; position: relative; color: #fff; }
 .cta-section p { font-size: 15px; color: rgba(255,255,255,.6); margin: 0 auto 28px; max-width: 480px; position: relative; }
 
 .landing-footer {
