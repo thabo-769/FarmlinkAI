@@ -2197,6 +2197,32 @@ h1, h2, h3, h4, h5, h6 {
 @media (max-width: 600px) {
   .product-grid { grid-template-columns: 1fr; }
   .market-grid { grid-template-columns: 1fr; }
+  .market-grid .product-card {
+    display: grid;
+    grid-template-columns: minmax(100px, 35%) minmax(0, 1fr);
+  }
+  .market-grid .product-photo {
+    height: auto;
+    min-height: 132px;
+  }
+  .market-grid .product-info {
+    min-width: 0;
+    padding: 11px 10px;
+  }
+  .market-grid .product-title {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .market-grid .product-meta {
+    flex-wrap: wrap;
+    overflow-wrap: anywhere;
+  }
+  .market-grid .product-footer {
+    align-items: flex-end;
+    gap: 5px;
+  }
+  .market-grid .product-footer b { font-size: 15px; }
+  .detail-photo { height: clamp(180px, 65vw, 280px); }
   .dash-section-grid { grid-template-columns: 1fr; }
   .metric-row { grid-template-columns: 1fr; }
   .task-summary { grid-template-columns: 1fr; }
