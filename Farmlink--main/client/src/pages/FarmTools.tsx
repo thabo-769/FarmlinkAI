@@ -41,7 +41,7 @@ export function FarmTools({ embedded = false, defaultTab = 'weather' }: FarmTool
         <PageTitle
           kicker="SMART FARMING SUITE"
           title="Farm Tools"
-          sub="3 essential tools to power your harvest: localized weather forecasts, AI crop health diagnostics, and 24/7 farming advice."
+          sub="Three practical tools for your farm: local weather forecasts, AI crop-health guidance and farming advice."
         />
       )}
 
@@ -92,9 +92,9 @@ export function FarmTools({ embedded = false, defaultTab = 'weather' }: FarmTool
             <Bot size={26} />
           </div>
           <div className="farm-tool-info">
-            <div className="farm-tool-tag blue-tag">24/7 AI AGRONOMIST</div>
+            <div className="farm-tool-tag blue-tag">FARMING ADVICE WHENEVER YOU NEED IT</div>
             <h3>AI Assistance</h3>
-            <p>Ask farming questions on planting schedules, soil fertility, irrigation, and pest controls.</p>
+            <p>Ask questions about planting, soil health, irrigation and pest management.</p>
           </div>
           <span className="farm-tool-action">
             {activeTab === 'assistant' ? 'Active Tool' : 'Chat with AI'} <ArrowRight size={14} />

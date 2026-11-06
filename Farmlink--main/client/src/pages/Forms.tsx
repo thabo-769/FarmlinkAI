@@ -277,7 +277,7 @@ export function AuthPage({ register = false }: { register?: boolean }) {
             {[
               { val: '100%', label: 'Direct Trade' },
               { val: 'Mbare+', label: 'Price Tracking' },
-              { val: 'AI 24/7', label: 'Agronomic Help' },
+              { val: 'Any time', label: 'Farming advice' },
             ].map(s => (
               <div key={s.val} style={{ background: 'rgba(255,255,255,.1)', backdropFilter: 'blur(8px)', padding: '13px 10px', borderRadius: 12, border: '1px solid rgba(255,255,255,.12)', textAlign: 'center' }}>
                 <b style={{ color: '#fff', fontSize: 17, display: 'block', fontWeight: 800 }}>{s.val}</b>

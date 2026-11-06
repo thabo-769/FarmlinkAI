@@ -24,17 +24,19 @@ const ZW_CITIES: Record<string, { lat: number; lon: number; label: string }> = {
   beitbridge:         { lat: -22.2167, lon: 30.0000,  label: 'Beitbridge' },
 };
 
-function wmoToCondition(code: number): { condition: string; emoji: string } {
-  if (code === 0)                     return { condition: 'Clear sky',      emoji: '☀️' };
-  if (code === 1)                     return { condition: 'Mainly clear',   emoji: '🌤️' };
-  if (code === 2)                     return { condition: 'Partly cloudy',  emoji: '⛅' };
-  if (code === 3)                     return { condition: 'Overcast',       emoji: '☁️' };
-  if (code >= 45 && code <= 48)      return { condition: 'Foggy',          emoji: '🌫️' };
-  if (code >= 51 && code <= 55)      return { condition: 'Drizzle',        emoji: '🌦️' };
-  if (code >= 61 && code <= 65)      return { condition: 'Rain',           emoji: '🌧️' };
-  if (code >= 80 && code <= 82)      return { condition: 'Rain showers',   emoji: '🌦️' };
-  if (code >= 95 && code <= 99)      return { condition: 'Thunderstorm',   emoji: '⛈️' };
-  return                               { condition: 'Variable',            emoji: '🌡️' };
+function wmoToCondition(
+  code: number,
+): { condition: string; icon: 'sun' | 'partly-cloudy' | 'cloud' | 'fog' | 'drizzle' | 'rain' | 'thunderstorm' | 'variable' } {
+  if (code === 0) return { condition: 'Clear sky', icon: 'sun' };
+  if (code === 1) return { condition: 'Mainly clear', icon: 'partly-cloudy' };
+  if (code === 2) return { condition: 'Partly cloudy', icon: 'partly-cloudy' };
+  if (code === 3) return { condition: 'Overcast', icon: 'cloud' };
+  if (code >= 45 && code <= 48) return { condition: 'Foggy', icon: 'fog' };
+  if (code >= 51 && code <= 55) return { condition: 'Drizzle', icon: 'drizzle' };
+  if (code >= 61 && code <= 65) return { condition: 'Rain', icon: 'rain' };
+  if (code >= 80 && code <= 82) return { condition: 'Rain showers', icon: 'drizzle' };
+  if (code >= 95 && code <= 99) return { condition: 'Thunderstorm', icon: 'thunderstorm' };
+  return { condition: 'Variable', icon: 'variable' };
 }
 
 function farmAdvisory(code: number, rainChance: number, tempMax: number, wind: number): string {
@@ -94,7 +96,7 @@ router.get('/', async (req, res, next) => {
 
       const forecast = (daily.time as string[]).map((dateStr, i) => {
         const code = daily.weathercode[i];
-        const { condition, emoji } = wmoToCondition(code);
+        const { condition, icon } = wmoToCondition(code);
         const tempMax = daily.temperature_2m_max[i];
         const tempMin = daily.temperature_2m_min[i];
         const rainChance = daily.precipitation_probability_max[i] ?? 0;
@@ -108,7 +110,7 @@ router.get('/', async (req, res, next) => {
           wind_speed: Math.round(wind),
           humidity,
           condition,
-          emoji,
+          icon,
           wmo_code: code,
           sunrise: daily.sunrise?.[i] ?? null,
           sunset: daily.sunset?.[i] ?? null,
@@ -117,7 +119,7 @@ router.get('/', async (req, res, next) => {
       });
 
       const todayCode = cw?.weathercode ?? daily.weathercode[0];
-      const { condition: todayCond, emoji: todayEmoji } = wmoToCondition(todayCode);
+      const { condition: todayCond, icon: todayIcon } = wmoToCondition(todayCode);
       const todayRain = daily.precipitation_probability_max[0] ?? 0;
       const todayWind = Math.round(cw?.windspeed ?? daily.windspeed_10m_max[0] ?? 0);
       const todayTemp = Math.round(cw?.temperature ?? daily.temperature_2m_max[0]);
@@ -132,7 +134,7 @@ router.get('/', async (req, res, next) => {
           temp: todayTemp,
           feels_like: Math.round(todayTemp - (todayWind > 20 ? 2 : 0)),
           condition: todayCond,
-          emoji: todayEmoji,
+          icon: todayIcon,
           wind_speed: todayWind,
           humidity: todayHumidity,
           rain_chance: todayRain,
@@ -151,7 +153,7 @@ router.get('/', async (req, res, next) => {
       d.setDate(d.getDate() + i);
       const dateStr = d.toISOString().split('T')[0];
       const code = (i % 4 === 1) ? 61 : (i % 3 === 0) ? 2 : 1;
-      const { condition, emoji } = wmoToCondition(code);
+      const { condition, icon } = wmoToCondition(code);
       const tempMax = baseTemp + (i % 3) - 1;
       const tempMin = tempMax - 10;
       const rainChance = code === 61 ? 65 : code === 2 ? 25 : 10;
@@ -164,7 +166,7 @@ router.get('/', async (req, res, next) => {
         wind_speed: wind,
         humidity: 55 + (i % 4) * 5,
         condition,
-        emoji,
+        icon,
         wmo_code: code,
         sunrise: '05:30',
         sunset: '18:15',
@@ -182,7 +184,7 @@ router.get('/', async (req, res, next) => {
         temp: first.temp_max,
         feels_like: first.temp_max + 1,
         condition: first.condition,
-        emoji: first.emoji,
+        icon: first.icon,
         wind_speed: first.wind_speed,
         humidity: first.humidity,
         rain_chance: first.rain_chance,

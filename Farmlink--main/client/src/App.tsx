@@ -29,7 +29,7 @@ export default function App() {
         }
       />
 
-      {/* ── 2. Market Place ── */}
+      {/* ── 2. Marketplace ── */}
       <Route
         path="/marketplace"
         element={

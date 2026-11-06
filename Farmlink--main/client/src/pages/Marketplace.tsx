@@ -1,24 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  Sprout, Search, X, Plus, ArrowRight, ChevronRight, MapPin, Heart,
-  MessageCircle, Wheat, Leaf, Filter, ShoppingBag, ShieldCheck, CircleAlert,
-  CircleCheck, TrendingUp, Sparkles, Tag
+  Apple, Bird, Factory, Leaf, Package, Search, Settings, ShoppingBag, Sprout, Wheat,
+  X, Plus, ArrowRight, ChevronRight, MapPin, Heart, MessageCircle, Filter, ShieldCheck,
+  CircleAlert, CircleCheck, TrendingUp, Sparkles, Tag
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { products } from '../data';
 import type { Product } from '../types';
 import { api } from '../services/api';
 import { PageTitle, ProductCard, EmptyState } from '../components';
 
-const CATEGORY_ICONS: Record<string, string> = {
-  'All products': '🧺',
-  'Vegetables': '🥬',
-  'Fruits': '🥑',
-  'Grains & Cereals': '🌽',
-  'Livestock & Poultry': '🐐',
-  'Equipment & Tools': '⚙️',
-  'Inputs & Seeds': '🌱',
-  'Agro-Processed': '🍯',
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  'All products': ShoppingBag,
+  Vegetables: Leaf,
+  Fruits: Apple,
+  'Grains & Cereals': Wheat,
+  'Livestock & Poultry': Bird,
+  'Equipment & Tools': Settings,
+  'Inputs & Seeds': Sprout,
+  'Agro-Processed': Factory,
 };
 
 const CATEGORIES = [
@@ -215,11 +216,12 @@ export function Marketplace() {
         </label>
       </div>
 
-      {/* DIVERSE CATEGORY TABS WITH EMOJIS & ITEM COUNTS */}
+      {/* MARKETPLACE CATEGORIES */}
       <div className="category-tabs" style={{ overflowX: 'auto', paddingBottom: '6px' }}>
         {CATEGORIES.map(c => {
           const count = categoryCounts[c] ?? 0;
           const isActive = category === c;
+          const Icon = CATEGORY_ICONS[c] ?? Package;
           return (
             <button
               key={c}
@@ -227,7 +229,7 @@ export function Marketplace() {
               className={isActive ? 'active' : ''}
               style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              <span>{CATEGORY_ICONS[c]}</span>
+              <Icon size={16} aria-hidden="true" />
               <span>{c}</span>
               <span style={{ fontSize: '10px', opacity: isActive ? 1 : 0.7, marginLeft: '2px' }}>
                 ({count})

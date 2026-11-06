@@ -14,12 +14,12 @@ const pfumvudzaPlot   = 'https://images.unsplash.com/photo-1592417817098-8f3d6ef
 const FEATURES = [
   {
     id: 'ai-assistant',
-    tag: '24/7 Agro AI',
+    tag: 'AI farming assistant',
     tagColor: '#087443',
     img: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=900&q=80',
     imgAlt: 'AI farming assistant',
     title: 'AI Farming Assistant',
-    desc: 'Ask complex questions in plain language about fertilizer rates, crop rotations, soil acidity, and livestock healthcare. Available 24/7 with Zimbabwean agronomic context.',
+    desc: 'Ask questions in plain language about fertilizer, crop rotation, soil health and livestock care. Get farming guidance tailored to Zimbabwe whenever you need it.',
     to: '/assistant',
     cta: 'Ask AI Assistant',
     icon: <Bot size={15} />,
@@ -130,7 +130,7 @@ export function PublicHome() {
               <em>Fair Direct Markets.</em>
             </h1>
             <p>
-              No middlemen. No guesswork. Sell at fair prices, diagnose crop diseases instantly, and get 24/7 AI farming guidance — all in one place.
+              Sell at fair prices, check crop health and get AI farming guidance whenever you need it, all in one place.
             </p>
             <div className="hero-actions">
               <Link to="/register" className="btn btn-lime" style={{ padding: '14px 26px', fontSize: '15px', fontWeight: 700 }}>
@@ -257,7 +257,7 @@ export function PublicHome() {
               { val: '+35%', label: 'Average Farmer Income Increase' },
               { val: '92%',  label: 'Crop Disease Detection Accuracy' },
               { val: '14+',  label: 'Trading Hubs Connected' },
-              { val: '24/7', label: 'AI Agronomic Support' },
+              { val: 'Any time', label: 'AI farming guidance' },
             ].map((item, i) => (
               <div key={i} className="impact-item">
                 <b>{item.val}</b>
@@ -275,7 +275,7 @@ export function PublicHome() {
               Real impact for Zimbabwean growers
             </h2>
             <p style={{ fontSize: 15, color: '#4d6456', lineHeight: 1.65, margin: 0 }}>
-              Hear how direct trade, live agro-weather, and AI disease diagnosis are transforming harvest outcomes across Zimbabwe.
+              Hear how direct trade, local weather forecasts and AI crop-health guidance are supporting farmers across Zimbabwe.
             </p>
           </div>
 
