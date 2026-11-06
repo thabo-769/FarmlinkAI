@@ -120,10 +120,6 @@ export function PublicHome() {
           }}
         >
           <div className="hero-copy fade-up">
-            <span className="section-kicker" style={{ color: '#c8f07a', marginBottom: 12, display: 'block' }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#c8f07a', display: 'inline-block', marginRight: 7 }} />
-              ZIMBABWE'S PREMIER AGRI-PLATFORM
-            </span>
             <h1>
               Empowering Farmers with{' '}
               <em>AI Agronomy</em> &{' '}
@@ -154,7 +150,7 @@ export function PublicHome() {
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.1fr) minmax(0,1fr)', gap: '52px', alignItems: 'center' }}>
             <div className="fade-up">
               <span className="section-kicker" style={{ marginBottom: 12 }}>WHY FARMLINK AI EXISTS</span>
-              <h2 style={{ fontSize: 'clamp(28px,3.5vw,38px)', fontWeight: 900, letterSpacing: '-1px', margin: '8px 0 20px', lineHeight: 1.18 }}>
+              <h2 style={{ fontSize: 'clamp(28px,3.5vw,38px)', fontWeight: 900, letterSpacing: '-1px', margin: '8px 0 20px', lineHeight: 1.18, color: '#076b40' }}>
                 Tackling the Real Challenges of Zimbabwean Agriculture
               </h2>
               <p style={{ fontSize: 15, color: '#455a4e', lineHeight: 1.75, marginBottom: 24 }}>
@@ -271,7 +267,7 @@ export function PublicHome() {
         <section id="impact" className="section-wrap" style={{ background: '#fff' }}>
           <div style={{ textAlign: 'center', maxWidth: 680, margin: '0 auto 44px' }}>
             <span className="section-kicker" style={{ marginBottom: 12 }}>PROVEN RESULTS</span>
-            <h2 style={{ fontSize: 'clamp(26px,3.5vw,36px)', fontWeight: 900, letterSpacing: '-0.8px', margin: '8px 0 14px' }}>
+            <h2 style={{ fontSize: 'clamp(26px,3.5vw,36px)', fontWeight: 900, letterSpacing: '-0.8px', margin: '8px 0 14px', color: '#076b40' }}>
               Real impact for Zimbabwean growers
             </h2>
             <p style={{ fontSize: 15, color: '#4d6456', lineHeight: 1.65, margin: 0 }}>

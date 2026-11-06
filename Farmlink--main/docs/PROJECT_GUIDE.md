@@ -34,13 +34,12 @@ Farmlink--main/
 ├── supabase/
 │   ├── migrations/              PostgreSQL schema, triggers, RLS and Storage rules
 │   └── seed.sql                 Explicit note that fabricated market data is not seeded
-├── .env.example                Root-level example values
 ├── package.json                npm workspaces and root commands
 ├── vercel.json                 Combined deployment routing/build configuration
 └── README.md                   Quick start and readiness summary
 ```
 
-There are also `client/vercel.json`, nested Vite configuration files, and historical lockfile backups. `node_modules/` and build output are generated artifacts and should not be edited by hand.
+There are also `client/vercel.json` and nested Vite configuration files for client-specific deployments and builds. `node_modules/` and build output are generated artifacts and should not be edited by hand.
 
 ## 3. Technology and request flow
 

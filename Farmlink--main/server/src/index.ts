@@ -12,6 +12,8 @@ import prices from './routes/prices.js';
 import reports from './routes/reports.js';
 import weather from './routes/weather.js';
 import admin from './routes/admin.js';
+import analytics from './routes/analytics.js';
+import irrigation from './routes/irrigation.js';
 import { errors, notFound } from './middleware/errors.js';
 
 export const app = express();
@@ -50,6 +52,8 @@ api.use('/prices', prices);
 api.use('/reports', reports);
 api.use('/weather', weather);
 api.use('/admin', admin);
+api.use('/analytics', analytics);
+api.use('/irrigation', irrigation);
 
 // Robust routing matching:
 // /api/v1/..., /api/..., /v1/..., and direct routes

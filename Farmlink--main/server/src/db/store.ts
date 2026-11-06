@@ -42,6 +42,61 @@ export interface UserProfile {
   created_at: string;
 }
 
+export interface DiagnosisRecord {
+  id: string;
+  user_id: string;
+  problem: string;
+  crop_type?: string;
+  severity: 'low' | 'moderate' | 'high' | 'critical';
+  confidence: number;
+  symptoms: string;
+  treatment: string;
+  prevention: string;
+  image_url?: string;
+  created_at: string;
+}
+
+export interface FarmFinancialRecord {
+  id: string;
+  user_id: string;
+  type: 'expense' | 'income' | 'production';
+  category: string;
+  crop?: string;
+  amount: number;
+  currency: string;
+  quantity?: number;
+  unit?: string;
+  date: string;
+  notes?: string;
+  season?: string;
+}
+
+export interface IrrigationLogItem {
+  id: string;
+  user_id: string;
+  crop: string;
+  duration_minutes: number;
+  water_liters: number;
+  method: string;
+  growth_stage: string;
+  weather_condition: string;
+  saved_liters: number;
+  date: string;
+  notes?: string;
+}
+
+export interface PriceAlertItem {
+  id: string;
+  user_id: string;
+  crop: string;
+  market: string;
+  target_price: number;
+  currency: string;
+  condition: 'above' | 'below';
+  created_at: string;
+  active: boolean;
+}
+
 // In-memory data store with live syncing
 export const db = {
   profiles: new Map<string, UserProfile>(),
@@ -224,4 +279,8 @@ export const db = {
     },
   ] as ProductItem[],
   tasks: new Map<string, FarmingTaskItem[]>(),
+  diagnoses: new Map<string, DiagnosisRecord[]>(),
+  analytics: new Map<string, FarmFinancialRecord[]>(),
+  irrigationLogs: new Map<string, IrrigationLogItem[]>(),
+  priceAlerts: new Map<string, PriceAlertItem[]>(),
 };

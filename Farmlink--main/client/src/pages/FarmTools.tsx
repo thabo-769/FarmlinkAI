@@ -1,154 +1,313 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ScanLine, Bot, CloudSun, ArrowRight, Sparkles, CloudRain, ShieldCheck, ThermometerSun } from 'lucide-react';
+import {
+  Bot, ScanLine, CloudSun, TrendingUp, CalendarDays, BarChart3,
+  Droplets, Mic, ArrowRight, ArrowLeft, LayoutGrid, CheckCircle2
+} from 'lucide-react';
 import { PageTitle } from '../components';
-import { CropHealth } from './CropHealth';
-import { Assistant, Weather } from './Workspace';
 
-export type ToolTab = 'weather' | 'crop-health' | 'assistant';
+// The 8 Dedicated Tool Components
+import { AssistantTool } from './tools/AssistantTool';
+import { CropDoctorTool } from './tools/CropDoctorTool';
+import { WeatherTool } from './tools/WeatherTool';
+import { MarketPricesTool } from './tools/MarketPricesTool';
+import { PlantingCalendarTool } from './tools/PlantingCalendarTool';
+import { FarmAnalyticsTool } from './tools/FarmAnalyticsTool';
+import { SmartIrrigationTool } from './tools/SmartIrrigationTool';
+import { VoiceAssistantTool } from './tools/VoiceAssistantTool';
+
+export type ToolId =
+  | 'overview'
+  | 'assistant'
+  | 'crop-doctor'
+  | 'weather'
+  | 'market-prices'
+  | 'planting-calendar'
+  | 'farm-analytics'
+  | 'smart-irrigation'
+  | 'voice-assistant';
+
+interface ToolMeta {
+  id: ToolId;
+  name: string;
+  tag: string;
+  desc: string;
+  status: string;
+  icon: any;
+  tint: string;
+  actionText: string;
+}
+
+export const AI_FARM_TOOLS: ToolMeta[] = [
+  {
+    id: 'assistant',
+    name: 'AI Farming Assistant',
+    tag: 'AGRONOMIC ADVISOR',
+    desc: 'Intelligent conversational advisor for crop management, Pfumvudza guidelines, and fertilizer calibration.',
+    status: 'AI Active',
+    icon: Bot,
+    tint: 'brand',
+    actionText: 'Open Assistant',
+  },
+  {
+    id: 'crop-doctor',
+    name: 'AI Crop Doctor',
+    tag: 'DISEASE & PEST AI',
+    desc: 'Camera-enabled plant pathology scanner. Identify foliar diseases, Fall Armyworm, and nutrient deficiencies.',
+    status: 'Vision Engine Ready',
+    icon: ScanLine,
+    tint: 'green',
+    actionText: 'Diagnose Crops',
+  },
+  {
+    id: 'weather',
+    name: 'AI Weather Intelligence',
+    tag: 'AGRO-METEOROLOGY',
+    desc: 'Radar forecasts, foliar spraying suitability windows, and drought/excess rainfall warnings for Zimbabwe.',
+    status: 'Live Satellite Radar',
+    icon: CloudSun,
+    tint: 'orange',
+    actionText: 'Check Forecast',
+  },
+  {
+    id: 'market-prices',
+    name: 'AI Market Price Intelligence',
+    tag: 'AMA & REGIONAL ARBITRAGE',
+    desc: 'Benchmark commodity prices across Mbare Musika, Bulawayo, Sakubva, and GMB with 30-day AI price forecasts.',
+    status: 'Verified AMA Feeds',
+    icon: TrendingUp,
+    tint: 'blue',
+    actionText: 'Compare Markets',
+  },
+  {
+    id: 'planting-calendar',
+    name: 'AI Planting Calendar',
+    tag: 'SEASONAL TIMELINES',
+    desc: 'Customized sowing dates, fertilizer split milestones, and task schedules tailored to Natural Regions I – V.',
+    status: 'Regions I–V Aligned',
+    icon: CalendarDays,
+    tint: 'green',
+    actionText: 'Plan Planting',
+  },
+  {
+    id: 'farm-analytics',
+    name: 'AI Farm Analytics',
+    tag: 'PROFIT & YIELD AUDIT',
+    desc: 'Track input expenses, harvest output, and sales revenue with AI-powered input cost reduction recommendations.',
+    status: 'P&L Engine Active',
+    icon: BarChart3,
+    tint: 'purple',
+    actionText: 'View Analytics',
+  },
+  {
+    id: 'smart-irrigation',
+    name: 'AI Smart Irrigation',
+    tag: 'HYDRO-PRECISION',
+    desc: 'Calculate precise crop water demand based on evapotranspiration (ETc), soil type, and rainfall adjustments.',
+    status: 'Weather Synced',
+    icon: Droplets,
+    tint: 'blue',
+    actionText: 'Plan Irrigation',
+  },
+  {
+    id: 'voice-assistant',
+    name: 'AI Voice Assistant',
+    tag: 'HANDS-FREE FIELD ADVISOR',
+    desc: 'Speak agricultural inquiries into your microphone and hear spoken AI advice in English, Shona, or Ndebele.',
+    status: 'English · Shona · Ndebele',
+    icon: Mic,
+    tint: 'brand',
+    actionText: 'Start Speaking',
+  },
+];
 
 interface FarmToolsProps {
   embedded?: boolean;
-  defaultTab?: ToolTab;
+  defaultTab?: ToolId;
 }
 
-export function FarmTools({ embedded = false, defaultTab = 'weather' }: FarmToolsProps) {
+export function FarmTools({ embedded = false, defaultTab = 'overview' }: FarmToolsProps) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const urlTab = searchParams.get('tool') as ToolTab;
-  const [activeTab, setActiveTab] = useState<ToolTab>(
-    urlTab && ['weather', 'crop-health', 'assistant'].includes(urlTab)
-      ? urlTab
-      : defaultTab
-  );
+  const rawParam = searchParams.get('tool');
+
+  // Handle aliases for backwards compatibility
+  let normalizedTab: ToolId = 'overview';
+  if (rawParam) {
+    if (rawParam === 'crop-health') normalizedTab = 'crop-doctor';
+    else if (rawParam === 'prices') normalizedTab = 'market-prices';
+    else if (AI_FARM_TOOLS.some((t) => t.id === rawParam)) normalizedTab = rawParam as ToolId;
+  } else if (defaultTab !== 'overview') {
+    normalizedTab = defaultTab;
+  }
+
+  const [activeTab, setActiveTab] = useState<ToolId>(normalizedTab);
 
   useEffect(() => {
-    const param = searchParams.get('tool') as ToolTab;
-    if (param && ['weather', 'crop-health', 'assistant'].includes(param) && param !== activeTab) {
-      setActiveTab(param);
+    const p = searchParams.get('tool');
+    if (p) {
+      if (p === 'crop-health' && activeTab !== 'crop-doctor') setActiveTab('crop-doctor');
+      else if (p === 'prices' && activeTab !== 'market-prices') setActiveTab('market-prices');
+      else if (AI_FARM_TOOLS.some((t) => t.id === p) && activeTab !== p) setActiveTab(p as ToolId);
+    } else if (!p && activeTab !== 'overview' && !embedded) {
+      setActiveTab('overview');
     }
   }, [searchParams]);
 
-  function switchTab(tab: ToolTab) {
+  function switchTab(tab: ToolId) {
     setActiveTab(tab);
     if (!embedded) {
-      setSearchParams({ tool: tab });
+      if (tab === 'overview') {
+        searchParams.delete('tool');
+        setSearchParams(searchParams);
+      } else {
+        setSearchParams({ tool: tab });
+      }
     }
   }
+
+  const activeToolMeta = AI_FARM_TOOLS.find((t) => t.id === activeTab);
 
   return (
     <div className={`farm-tools-page ${embedded ? 'embedded-tools-suite' : ''}`}>
       {!embedded && (
         <PageTitle
-          kicker="SMART FARMING SUITE"
+          kicker="AI-POWERED AGRICULTURAL SUITE"
           title="Farm Tools"
-          sub="Three practical tools for your farm: local weather forecasts, AI crop-health guidance and farming advice."
+          sub="Eight intelligent agricultural tools engineered for Zimbabwean farmers: from crop diagnosis and planting schedules to smart irrigation, weather intelligence and voice guidance."
         />
       )}
 
-      {/* 3 Tool Feature Cards */}
-      <div className="farm-tools-cards-grid">
-        <button
-          type="button"
-          onClick={() => switchTab('weather')}
-          className={`farm-tool-card ${activeTab === 'weather' ? 'is-active' : ''}`}
+      {/* Mobile Tool Selector Dropdown (< 768px): Zero horizontal scroll */}
+      <div className="farm-tools-mobile-selector">
+        <label htmlFor="farm-tool-select" className="mobile-select-label">
+          <LayoutGrid size={15} /> Switch Tool:
+        </label>
+        <select
+          id="farm-tool-select"
+          value={activeTab}
+          onChange={(e) => switchTab(e.target.value as ToolId)}
+          className="mobile-tool-dropdown"
         >
-          <div className="farm-tool-icon orange">
-            <CloudSun size={26} />
-          </div>
-          <div className="farm-tool-info">
-            <div className="farm-tool-tag orange-tag">METEOROLOGY & PLANNING</div>
-            <h3>Weather Forecast</h3>
-            <p>Real-time agro-forecasts, rainfall outlook, temperature, wind, and spraying conditions.</p>
-          </div>
-          <span className="farm-tool-action">
-            {activeTab === 'weather' ? 'Active Tool' : 'Open Forecast'} <ArrowRight size={14} />
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => switchTab('crop-health')}
-          className={`farm-tool-card ${activeTab === 'crop-health' ? 'is-active' : ''}`}
-        >
-          <div className="farm-tool-icon green">
-            <ScanLine size={26} />
-          </div>
-          <div className="farm-tool-info">
-            <div className="farm-tool-tag green-tag">AI DIAGNOSTICS</div>
-            <h3>Crop Health</h3>
-            <p>Scan crop leaves for diseases and pests with your camera, then receive instant treatment guidance.</p>
-          </div>
-          <span className="farm-tool-action">
-            {activeTab === 'crop-health' ? 'Active Tool' : 'Scan Crops'} <ArrowRight size={14} />
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => switchTab('assistant')}
-          className={`farm-tool-card ${activeTab === 'assistant' ? 'is-active' : ''}`}
-        >
-          <div className="farm-tool-icon blue">
-            <Bot size={26} />
-          </div>
-          <div className="farm-tool-info">
-            <div className="farm-tool-tag blue-tag">FARMING ADVICE WHENEVER YOU NEED IT</div>
-            <h3>AI Assistance</h3>
-            <p>Ask questions about planting, soil health, irrigation and pest management.</p>
-          </div>
-          <span className="farm-tool-action">
-            {activeTab === 'assistant' ? 'Active Tool' : 'Chat with AI'} <ArrowRight size={14} />
-          </span>
-        </button>
+          <option value="overview">All 8 Tools (Overview)</option>
+          {AI_FARM_TOOLS.map((tool, idx) => (
+            <option key={tool.id} value={tool.id}>
+              {idx + 1}. {tool.name}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Active Tool Workspace */}
-      <div className="farm-tool-active-wrapper">
-        <div className="farm-tool-tab-bar">
-          <button
-            type="button"
-            className={`tool-tab-btn ${activeTab === 'weather' ? 'selected' : ''}`}
-            onClick={() => switchTab('weather')}
-          >
-            <CloudSun size={17} />
-            <span>1. Weather Forecast</span>
-          </button>
-          <button
-            type="button"
-            className={`tool-tab-btn ${activeTab === 'crop-health' ? 'selected' : ''}`}
-            onClick={() => switchTab('crop-health')}
-          >
-            <ScanLine size={17} />
-            <span>2. Crop Health</span>
-          </button>
-          <button
-            type="button"
-            className={`tool-tab-btn ${activeTab === 'assistant' ? 'selected' : ''}`}
-            onClick={() => switchTab('assistant')}
-          >
-            <Bot size={17} />
-            <span>3. AI Assistance</span>
-          </button>
-        </div>
+      {/* Desktop / Tablet Tab Bar (>= 768px): No ugly scrollbar */}
+      <div className="farm-tools-top-nav-bar desktop-only-tabs">
+        <button
+          type="button"
+          className={`nav-tab-pill ${activeTab === 'overview' ? 'selected' : ''}`}
+          onClick={() => switchTab('overview')}
+        >
+          <LayoutGrid size={14} />
+          <span>All 8 Tools</span>
+        </button>
 
-        <div className="farm-tool-content-viewport">
-          {activeTab === 'weather' && (
-            <div className="tool-view-card">
-              <Weather />
-            </div>
-          )}
-          {activeTab === 'crop-health' && (
-            <div className="tool-view-card">
-              <CropHealth />
-            </div>
-          )}
-          {activeTab === 'assistant' && (
-            <div className="tool-view-card">
-              <Assistant />
-            </div>
-          )}
-        </div>
+        {AI_FARM_TOOLS.map((tool, idx) => {
+          const Icon = tool.icon;
+          const isSelected = activeTab === tool.id;
+          return (
+            <button
+              key={tool.id}
+              type="button"
+              className={`nav-tab-pill ${isSelected ? 'selected' : ''}`}
+              onClick={() => switchTab(tool.id)}
+            >
+              <Icon size={13} />
+              <span>{idx + 1}. {tool.name.replace('AI ', '')}</span>
+            </button>
+          );
+        })}
       </div>
+
+      {/* If Overview: Render 8 Interactive Tool Cards */}
+      {activeTab === 'overview' ? (
+        <div className="farm-tools-hub-view">
+          <div className="hub-intro-box panel">
+            <div className="hub-intro-text">
+              <span className="section-kicker">COMPREHENSIVE FARM MANAGEMENT SUITE</span>
+              <h2>Intelligent Decision Tools for Every Stage of the Season</h2>
+              <p className="hub-desc-text">
+                From soil prep and certified seed selection to pest scouting, water conservation, and market commodity arbitrage. Select any tool below to launch its dedicated workspace.
+              </p>
+            </div>
+            <div className="hub-features-chips">
+              <span className="hub-chip"><CheckCircle2 size={12} /> Regions I–V</span>
+              <span className="hub-chip"><CheckCircle2 size={12} /> Pfumvudza Aligned</span>
+              <span className="hub-chip"><CheckCircle2 size={12} /> Real AMA Pricing</span>
+              <span className="hub-chip"><CheckCircle2 size={12} /> English · Shona · Ndebele</span>
+            </div>
+          </div>
+
+          <div className="farm-tools-cards-grid eight-cards">
+            {AI_FARM_TOOLS.map((tool, index) => {
+              const Icon = tool.icon;
+              return (
+                <button
+                  key={tool.id}
+                  type="button"
+                  onClick={() => switchTab(tool.id)}
+                  className={`farm-tool-card interactive-card tint-${tool.tint}`}
+                >
+                  <div className="card-top-status-row">
+                    <span className="tool-number-pill">0{index + 1}</span>
+                    <span className="tool-status-pill online">
+                      <span className="dot" /> {tool.status}
+                    </span>
+                  </div>
+
+                  <div className="tool-card-main-content">
+                    <div className={`farm-tool-icon ${tool.tint}`}>
+                      <Icon size={22} />
+                    </div>
+
+                    <div className="farm-tool-info">
+                      <div className={`farm-tool-tag ${tool.tint}-tag`}>{tool.tag}</div>
+                      <h3>{tool.name}</h3>
+                      <p>{tool.desc}</p>
+                    </div>
+                  </div>
+
+                  <span className="farm-tool-action">
+                    {tool.actionText} <ArrowRight size={13} />
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        /* Render Active Dedicated Tool Workspace */
+        <div className="active-tool-workspace-view">
+          <div className="workspace-breadcrumb-bar">
+            <button
+              type="button"
+              className="breadcrumb-back-btn"
+              onClick={() => switchTab('overview')}
+            >
+              <ArrowLeft size={14} /> Back to All Farm Tools
+            </button>
+            <span className="breadcrumb-separator">/</span>
+            <span className="breadcrumb-current">{activeToolMeta?.name}</span>
+          </div>
+
+          <div className="active-tool-rendered-container">
+            {activeTab === 'assistant' && <AssistantTool />}
+            {activeTab === 'crop-doctor' && <CropDoctorTool />}
+            {activeTab === 'weather' && <WeatherTool />}
+            {activeTab === 'market-prices' && <MarketPricesTool />}
+            {activeTab === 'planting-calendar' && <PlantingCalendarTool />}
+            {activeTab === 'farm-analytics' && <FarmAnalyticsTool />}
+            {activeTab === 'smart-irrigation' && <SmartIrrigationTool />}
+            {activeTab === 'voice-assistant' && <VoiceAssistantTool />}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
   UserRound,
   ArrowUpRight,
   ScanLine, Moon, Wrench, ChevronDown, LayoutDashboard,
+  TrendingUp, BarChart3, Droplets, Mic,
 } from 'lucide-react';
 import type { Product } from './types';
 import { useAuth } from './context/AuthContext';
@@ -81,9 +82,10 @@ export function Sidebar({ open = false, close }: { open?: boolean; close?: () =>
     location.pathname.startsWith('/farm-tools') ||
     location.pathname === '/crop-health' ||
     location.pathname === '/assistant' ||
-    location.pathname === '/weather';
+    location.pathname === '/weather' ||
+    location.pathname === '/prices';
 
-  const [farmToolsOpen, setFarmToolsOpen] = useState(isFarmToolsActive);
+  const [farmToolsOpen, setFarmToolsOpen] = useState(true);
 
   return (
     <aside className={`sidebar${open ? ' open' : ''}`}>
@@ -159,35 +161,91 @@ export function Sidebar({ open = false, close }: { open?: boolean; close?: () =>
             {farmToolsOpen && (
               <div className="side-sub-nav">
                 <NavLink
-                  to="/farm-tools?tool=weather"
-                  onClick={close}
-                  className={({ isActive }) =>
-                    `side-sub-link ${isActive || location.pathname === '/weather' ? 'selected' : ''}`
-                  }
-                >
-                  <CloudSun size={14} />
-                  <span>Weather Forecast</span>
-                </NavLink>
-                <NavLink
-                  to="/farm-tools?tool=crop-health"
-                  onClick={close}
-                  className={({ isActive }) =>
-                    `side-sub-link ${isActive || location.pathname === '/crop-health' ? 'selected' : ''}`
-                  }
-                >
-                  <ScanLine size={14} />
-                  <span>Crop Health</span>
-                </NavLink>
-                <NavLink
                   to="/farm-tools?tool=assistant"
                   onClick={close}
-                  className={({ isActive }) =>
-                    `side-sub-link ${isActive || location.pathname === '/assistant' ? 'selected' : ''}`
+                  className={() =>
+                    `side-sub-link ${location.search.includes('tool=assistant') || location.pathname === '/assistant' ? 'selected' : ''}`
                   }
                 >
                   <Bot size={14} />
-                  <span>AI Assistance</span>
-                  <span className="new-pill" style={{ marginLeft: 'auto' }}>AI</span>
+                  <span>AI Farming Assistant</span>
+                </NavLink>
+
+                <NavLink
+                  to="/farm-tools?tool=crop-doctor"
+                  onClick={close}
+                  className={() =>
+                    `side-sub-link ${location.search.includes('tool=crop-doctor') || location.pathname === '/crop-health' ? 'selected' : ''}`
+                  }
+                >
+                  <ScanLine size={14} />
+                  <span>AI Crop Doctor</span>
+                </NavLink>
+
+                <NavLink
+                  to="/farm-tools?tool=weather"
+                  onClick={close}
+                  className={() =>
+                    `side-sub-link ${location.search.includes('tool=weather') || location.pathname === '/weather' ? 'selected' : ''}`
+                  }
+                >
+                  <CloudSun size={14} />
+                  <span>AI Weather Intelligence</span>
+                </NavLink>
+
+                <NavLink
+                  to="/farm-tools?tool=market-prices"
+                  onClick={close}
+                  className={() =>
+                    `side-sub-link ${location.search.includes('tool=market-prices') || location.pathname === '/prices' ? 'selected' : ''}`
+                  }
+                >
+                  <TrendingUp size={14} />
+                  <span>AI Market Prices</span>
+                </NavLink>
+
+                <NavLink
+                  to="/farm-tools?tool=planting-calendar"
+                  onClick={close}
+                  className={() =>
+                    `side-sub-link ${location.search.includes('tool=planting-calendar') ? 'selected' : ''}`
+                  }
+                >
+                  <CalendarDays size={14} />
+                  <span>AI Planting Calendar</span>
+                </NavLink>
+
+                <NavLink
+                  to="/farm-tools?tool=farm-analytics"
+                  onClick={close}
+                  className={() =>
+                    `side-sub-link ${location.search.includes('tool=farm-analytics') ? 'selected' : ''}`
+                  }
+                >
+                  <BarChart3 size={14} />
+                  <span>AI Farm Analytics</span>
+                </NavLink>
+
+                <NavLink
+                  to="/farm-tools?tool=smart-irrigation"
+                  onClick={close}
+                  className={() =>
+                    `side-sub-link ${location.search.includes('tool=smart-irrigation') ? 'selected' : ''}`
+                  }
+                >
+                  <Droplets size={14} />
+                  <span>AI Smart Irrigation</span>
+                </NavLink>
+
+                <NavLink
+                  to="/farm-tools?tool=voice-assistant"
+                  onClick={close}
+                  className={() =>
+                    `side-sub-link ${location.search.includes('tool=voice-assistant') ? 'selected' : ''}`
+                  }
+                >
+                  <Mic size={14} />
+                  <span>AI Voice Assistant</span>
                 </NavLink>
               </div>
             )}
@@ -391,6 +449,15 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="page-content">{children}</div>
+        <footer className="app-footer">
+          <Brand />
+          <span>© {new Date().getFullYear()} FarmLink AI. Built for farmers across Zimbabwe.</span>
+          <nav className="app-footer-links" aria-label="Footer navigation">
+            <Link to="/">Home</Link>
+            <Link to="/marketplace">Marketplace</Link>
+            <Link to="/farm-tools">Farm Tools</Link>
+          </nav>
+        </footer>
       </main>
     </div>
   );

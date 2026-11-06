@@ -51,7 +51,7 @@ export default function App() {
         }
       />
 
-      {/* ── 3. Farm Tools  (Weather Forecast · Crop Health · AI Assistance) ── */}
+      {/* ── 3. Farm Tools (AI-Powered 8 Tools Suite) ── */}
       <Route
         path="/farm-tools"
         element={
@@ -62,13 +62,13 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-      {/* Legacy direct routes still work, forwarding into the farm-tools tab view */}
+      {/* Direct routes forwarding into dedicated farm tools */}
       <Route
         path="/crop-health"
         element={
           <ProtectedRoute>
             <AppShell>
-              <CropHealth />
+              <FarmTools defaultTab="crop-doctor" />
             </AppShell>
           </ProtectedRoute>
         }
@@ -78,7 +78,7 @@ export default function App() {
         element={
           <ProtectedRoute>
             <AppShell>
-              <Assistant />
+              <FarmTools defaultTab="assistant" />
             </AppShell>
           </ProtectedRoute>
         }
@@ -88,7 +88,47 @@ export default function App() {
         element={
           <ProtectedRoute>
             <AppShell>
-              <Weather />
+              <FarmTools defaultTab="weather" />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/planting-calendar"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <FarmTools defaultTab="planting-calendar" />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/farm-analytics"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <FarmTools defaultTab="farm-analytics" />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/smart-irrigation"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <FarmTools defaultTab="smart-irrigation" />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/voice-assistant"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <FarmTools defaultTab="voice-assistant" />
             </AppShell>
           </ProtectedRoute>
         }
@@ -154,7 +194,7 @@ export default function App() {
         element={
           <ProtectedRoute>
             <AppShell>
-              <Prices />
+              <FarmTools defaultTab="market-prices" />
             </AppShell>
           </ProtectedRoute>
         }
