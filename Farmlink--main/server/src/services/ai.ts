@@ -66,10 +66,10 @@ export async function answerAgriculture(message: string) {
 }
 
 export async function analyzePlantImage(imageData: string, mimeType: string, symptoms: string) {
-  if (!config.aiApiKey || !config.aiModel || config.aiProvider !== 'openai-compatible') {
+  if (!config.aiApiKey) {
     throw new HttpError(
       503,
-      'Crop image analysis is not configured. Ask the administrator to set AI_PROVIDER=openai-compatible, AI_MODEL, and AI_API_KEY on the server.',
+      'Crop image analysis needs an OpenAI API key. In Vercel, open Project Settings > Environment Variables, add AI_API_KEY with your OpenAI API key, then redeploy. Keep the key private and do not add it to the code.',
     );
   }
 

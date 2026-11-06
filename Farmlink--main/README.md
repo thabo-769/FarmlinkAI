@@ -31,7 +31,7 @@ Requirements: Node.js 20+, npm, and a Supabase project. From the repository root
 2. Apply `supabase/migrations/202610290001_initial_schema.sql` using the Supabase SQL editor or Supabase CLI. The migration creates tables, indexes, RLS policies, role protection, and a `product-images` bucket.
 3. Install dependencies with `npm install`.
 4. Start both processes with `npm run dev`. The client is at `http://localhost:5173`; the API health check is `http://localhost:4000/health`.
-5. Configure `AI_PROVIDER=openai-compatible`, `AI_MODEL=gpt-4o-mini`, and `AI_API_KEY` on the server for crop-image analysis and text guidance. Keep the API key server-side. On Vercel, add all three as project environment variables and redeploy. Configure `WEATHER_API_KEY` for OpenWeather forecast access.
+5. Add `AI_API_KEY` to the server environment for crop-image analysis and text guidance. The provider defaults to `openai-compatible` and the model defaults to `gpt-4o-mini`; override these with `AI_PROVIDER` or `AI_MODEL` only if needed. On Vercel, add `AI_API_KEY` under Project Settings > Environment Variables and redeploy. Keep the key private and server-side. Configure `WEATHER_API_KEY` for OpenWeather forecast access.
 
 For deployments, host the client and API separately, set `CLIENT_URL` to the deployed client origin, set `VITE_API_URL` at client build time to the API base URL, and set server environment variables in the backend host's secret store. Set up Supabase email confirmation and redirect URLs to match the deployed client.
 

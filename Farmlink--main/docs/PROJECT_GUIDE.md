@@ -60,7 +60,7 @@ Requirements: Node.js 20 or newer and npm.
 3. Set `VITE_API_URL` for the browser. For local development it should be `http://localhost:4000/api/v1`.
 4. Set `VITE_FIREBASE_*` values only if using a real Firebase project. Without them, the client enables demo sign-in.
 5. Set server-side `FIREBASE_PROJECT_ID` and credentials suitable for Firebase Admin if verifying real Firebase ID tokens. The current Admin initialization specifies a project ID but does not load a service-account key explicitly; deployment must provide supported Google application credentials.
-6. Configure `AI_PROVIDER=openai-compatible`, a vision-capable `AI_MODEL` (for example `gpt-4o-mini`), and `AI_API_KEY` on the server for crop-image analysis and assistant responses. On Vercel, add these as project environment variables and redeploy. Set `WEATHER_API_KEY` for weather. Provider keys belong only on the server.
+6. Add `AI_API_KEY` to the server environment for crop-image analysis and assistant responses. The defaults are `AI_PROVIDER=openai-compatible` and `AI_MODEL=gpt-4o-mini`; override them only when using a different compatible provider/model. On Vercel, add `AI_API_KEY` under Project Settings > Environment Variables and redeploy. Keep provider keys server-side. Set `WEATHER_API_KEY` for weather.
 7. Run `npm run dev`. The Vite client uses port 5173 and Express uses port 4000 by default.
 
 Useful root scripts:
