@@ -1,5 +1,7 @@
 # FarmLink AI
 
+For the full repository map, configuration reference, page/API inventory, data model, integrations, deployment notes, and known implementation gaps, see [the Project Guide](docs/PROJECT_GUIDE.md).
+
 FarmLink AI is a responsive agricultural marketplace and information platform for Zimbabwe. The repository is organised as a React/Vite client, a versioned Express API, and Supabase migrations for PostgreSQL, authentication, and Storage.
 
 ## Architecture

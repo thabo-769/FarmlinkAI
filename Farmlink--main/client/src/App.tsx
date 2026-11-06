@@ -3,6 +3,7 @@ import { AppShell } from './components';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { PublicHome } from './pages/Home';
 import { Marketplace, ProductDetail } from './pages/Marketplace';
+import { FarmTools } from './pages/FarmTools';
 import { Dashboard, Assistant, Tasks, Weather, Prices, Profile, Admin, MyProducts } from './pages/Workspace';
 import { Settings } from './pages/Settings';
 import { CropHealth } from './pages/CropHealth';
@@ -16,7 +17,7 @@ export default function App() {
       <Route path="/login" element={<AuthPage />} />
       <Route path="/register" element={<AuthPage register />} />
 
-      {/* Protected Workspace Pages - Login Required */}
+      {/* ── 1. Dashboard ── */}
       <Route
         path="/dashboard"
         element={
@@ -27,6 +28,8 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* ── 2. Market Place ── */}
       <Route
         path="/marketplace"
         element={
@@ -47,16 +50,19 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* ── 3. Farm Tools  (Weather Forecast · Crop Health · AI Assistance) ── */}
       <Route
-        path="/assistant"
+        path="/farm-tools"
         element={
           <ProtectedRoute>
             <AppShell>
-              <Assistant />
+              <FarmTools />
             </AppShell>
           </ProtectedRoute>
         }
       />
+      {/* Legacy direct routes still work, forwarding into the farm-tools tab view */}
       <Route
         path="/crop-health"
         element={
@@ -68,11 +74,11 @@ export default function App() {
         }
       />
       <Route
-        path="/tasks"
+        path="/assistant"
         element={
           <ProtectedRoute>
             <AppShell>
-              <Tasks />
+              <Assistant />
             </AppShell>
           </ProtectedRoute>
         }
@@ -87,12 +93,38 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* ── 4. Profile ── */}
       <Route
-        path="/prices"
+        path="/profile"
         element={
           <ProtectedRoute>
             <AppShell>
-              <Prices />
+              <Profile />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ── 5. Settings ── */}
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <Settings />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ── Supporting Pages ── */}
+      <Route
+        path="/products"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <MyProducts />
             </AppShell>
           </ProtectedRoute>
         }
@@ -108,31 +140,21 @@ export default function App() {
         }
       />
       <Route
-        path="/profile"
+        path="/tasks"
         element={
           <ProtectedRoute>
             <AppShell>
-              <Profile />
+              <Tasks />
             </AppShell>
           </ProtectedRoute>
         }
       />
       <Route
-        path="/products"
+        path="/prices"
         element={
           <ProtectedRoute>
             <AppShell>
-              <MyProducts />
-            </AppShell>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <AppShell>
-              <Settings />
+              <Prices />
             </AppShell>
           </ProtectedRoute>
         }

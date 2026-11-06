@@ -1,41 +1,85 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { useEffect, useState, type FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Sprout, Search, Menu, X, CloudSun, Bot, Store, BarChart3, LayoutDashboard, ListTodo, Bell, Settings, LogOut, Plus, ArrowRight, ChevronRight, MapPin, Heart, MessageCircle, Send, Sun, CloudRain, Wind, Droplets, CalendarDays, CircleCheck, CircleAlert, Wheat, Leaf, Clock3, Filter, ShoppingBag, UserRound, Eye, ShieldCheck, Upload, ThermometerSun, TrendingUp, TrendingDown, Check, ArrowUpRight, Activity, MoreHorizontal, ScanLine, Timer, Play, Pause, RotateCcw, BellRing, Volume2, Phone, Mail, Edit3, Save } from 'lucide-react';
 import { products, marketPrices } from '../data';
 import type { Product } from '../types';
 import { api } from '../services/api';
 import { PageTitle, Metric, TaskRow, QuickAction, EmptyState, ProductCard } from '../components';
 import { useAuth } from '../context/AuthContext';
-export function Dashboard(){
-  const { user, profile } = useAuth();
-  const [taskCount, setTaskCount] = useState<number>(3);
-  const [listingCount, setListingCount] = useState<number>(1);
-  const [pulsePrices, setPulsePrices] = useState(marketPrices);
-  const displayName = profile?.full_name || (user as any)?.displayName || (user?.email ? user.email.split('@')[0] : 'Farmer');
-  const userInitials = profile?.full_name ? profile.full_name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase() : (user?.email?.slice(0,2).toUpperCase() || 'FL');
 
-  useEffect(() => {
-    api<{ data: any[] }>('/tasks').then(r => {
-      if (Array.isArray(r.data)) setTaskCount(r.data.length);
-    }).catch(() => {});
-    api<{ data: any[] }>('/products/mine').then(r => {
-      if (Array.isArray(r.data)) setListingCount(r.data.length);
-    }).catch(() => {});
-    api<{ data: any[] }>('/prices').then(r => {
-      if (Array.isArray(r.data) && r.data.length > 0) {
-        setPulsePrices(r.data.slice(0, 7).map(p => ({
-          crop: p.crop,
-          price: `$${Number(p.price).toFixed(2)}/${p.unit}`,
-          market: p.market,
-          change: p.change,
-          up: p.up
-        })));
-      }
-    }).catch(() => {});
-  }, []);
+export function Dashboard() {
+  const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
 
-  return <><div className="welcome-row"><div><div className="welcome-date"><Sun size={15}/> {new Intl.DateTimeFormat('en-GB',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(new Date()).toUpperCase()} <span>·</span> GROWING SEASON</div><h1>Good day, {displayName} <span className="wave">✳</span></h1><p>Here’s what’s happening on your farm today.</p></div><Link to="/listing/new" className="btn btn-primary"><Plus size={16}/> Add a product</Link></div><div className="dashboard-grid"><div className="dash-main"><div className="weather-banner"><div className="weather-main"><div className="weather-icon"><CloudSun size={35}/></div><div><span>YOUR WEATHER · {profile?.location || 'HARARE'}</span><div className="temp">25°<small>C</small></div><p>Partly cloudy · Regional agro-forecast</p></div></div><div className="weather-detail"><div><Wind size={16}/><span>Wind</span><b>14 km/h</b></div><div><Droplets size={16}/><span>Humidity</span><b>58%</b></div><div><CloudRain size={16}/><span>Rain chance</span><b>20%</b></div></div><Link to="/weather" className="weather-link" aria-label="View weather"><ArrowUpRight size={17}/></Link></div><div className="metric-grid"><Metric icon={<ShoppingBag size={18}/>} label="Your listings" value={String(listingCount)} foot="Active and draft" tint="green"/><Metric icon={<Eye size={18}/>} label="Market inquiries" value="14" foot="Last 30 days" tint="blue"/><Metric icon={<ListTodo size={18}/>} label="Open tasks" value={String(taskCount)} foot="Farming schedule" tint="orange"/></div><section className="panel"><div className="panel-heading"><div><h2>Your farming tasks</h2><p>Keep your farm moving forward.</p></div><Link className="text-link" to="/tasks">View all <ArrowRight size={14}/></Link></div><div className="task-list"><TaskRow icon={<Droplets/>} title="Check irrigation system" detail="North field · 2 hectares" when="Today" kind="mint"/><TaskRow icon={<Leaf/>} title="Apply fertiliser to maize" detail="Field 2 · top dressing" when="Tomorrow" kind="orange"/><TaskRow icon={<Wheat/>} title="Inspect tomato crop" detail="Greenhouse · check for pests" when="In 3 days" kind="purple"/></div></section><section className="panel market-panel"><div className="panel-heading"><div><h2>Market pulse</h2><p>Latest information from Mbare Musika & regional depots.</p></div><Link to="/prices" className="text-link">Price insights <ArrowRight size={14}/></Link></div><div className="price-list">{pulsePrices.map(r=><div className="price-row" key={r.crop}><span className="crop-dot"/><b>{r.crop}</b><span>{r.market}</span><strong>{r.price}</strong><small className={r.up?'rise':'fall'}>{r.up?<TrendingUp size={13}/>:<TrendingDown size={13}/>} {r.change}</small></div>)}</div></section></div><div className="dash-rail"><div className="profile-card"><div className="profile-cover"></div><div className="profile-details"><div className="profile-avatar">{userInitials}</div><b>{displayName}</b><span>{profile?.role || 'Farmer'}</span><div className="profile-place"><MapPin size={13}/> {profile?.location || 'Zimbabwe'}</div><div className="profile-stats"><div><b>{listingCount}</b><small>Listings</small></div><div><b>{taskCount}</b><small>Tasks</small></div><div><b>2025</b><small>Active</small></div></div><Link to="/profile" className="profile-link">View profile <ArrowRight size={14}/></Link></div></div><div className="quick-panel"><div className="panel-heading"><div><h2>Quick actions</h2><p>What would you like to do?</p></div></div><div className="quick-grid"><QuickAction icon={<Bot/>} title="Ask AI" to="/assistant"/><QuickAction icon={<Plus/>} title="Add listing" to="/listing/new"/><QuickAction icon={<BarChart3/>} title="Market prices" to="/prices"/><QuickAction icon={<CloudSun/>} title="Check weather" to="/weather"/></div></div><div className="assistant-promo"><div className="promo-icon"><Bot size={20}/></div><span>YOUR FARMING COMPANION</span><h3>A little guidance can go a long way.</h3><p>Ask a farming question and get practical pointers to help plan your next step.</p><Link to="/assistant" className="btn btn-primary">Ask FarmLink AI <ArrowRight size={14}/></Link></div><div className="recent-card"><div className="panel-heading"><h2>Recent activity</h2><MoreHorizontal size={17}/></div><div className="activity-line"><i/><p><b>FarmLink Account active</b> and connected to community services.<small>Just now</small></p></div><div className="activity-line"><i/><p><b>New marketplace listings</b> in your area.<small>Today</small></p></div><Link to="/notifications" className="text-link">All activity <ArrowRight size={14}/></Link></div></div></div></>}
-export function Assistant(){const [question,setQuestion]=useState(''),[busy,setBusy]=useState(false),[conversationId,setConversationId]=useState(''),[messages,setMessages]=useState<{role:string;text:string}[]>([]);async function submit(e:FormEvent){e.preventDefault();if(!question.trim())return;const text=question;setQuestion('');setMessages(m=>[...m,{role:'user',text}]);setBusy(true);try{const out=await api<{answer:string;conversationId:string}>('/ai/chat',{method:'POST',body:JSON.stringify({message:text,...(conversationId?{conversationId}:{})})});setConversationId(out.conversationId);setMessages(m=>[...m,{role:'assistant',text:out.answer}]);}catch(e){setMessages(m=>[...m,{role:'assistant',text:e instanceof Error?e.message:'The AI service is not connected yet. Add an AI provider on the server to receive farming guidance.'}]);}finally{setBusy(false)}}const prompts=['When should I plant maize in Mashonaland?','How can I improve soil health naturally?','What are signs of fall armyworm?','Help me plan a crop rotation'];return <><PageTitle kicker="YOUR FARMING COMPANION" title="AI Farming Assistant" sub="Ask questions about crops, soil, livestock and farm planning."/><div className="ai-layout"><div className="ai-chat panel"><div className="chat-top"><div className="bot-avatar"><Bot size={20}/></div><div><b>FarmLink AI</b><span><i/> General farming guidance</span></div><button className="icon-button" onClick={()=>{setMessages([]);setConversationId('')}} title="Clear conversation"><MoreHorizontal size={19}/></button></div><div className="chat-messages">{messages.length===0?<div className="chat-welcome"><div className="welcome-bot"><Sprout size={25}/></div><span className="section-kicker">HERE TO HELP YOU GROW</span><h2>What’s on your mind, James?</h2><p>Ask a question about your farm and I’ll help you think through the next step.</p><div className="suggestions">{prompts.map((s,i)=><button key={s} onClick={()=>setQuestion(s)}><span>{[<Wheat/>,<Leaf/>,<CircleAlert/>,<CalendarDays/>][i]}</span>{s}<ArrowUpRight size={13}/></button>)}</div></div>:messages.map((m,i)=><div className={`chat-message ${m.role}`} key={i}>{m.role==='assistant'&&<div className="message-avatar"><Sprout size={15}/></div>}<div className="bubble">{m.text}</div></div>)}{busy&&<div className="chat-message assistant"><div className="message-avatar"><Sprout size={15}/></div><div className="bubble typing"><i/><i/><i/></div></div>}</div><form className="chat-input" onSubmit={submit}><input value={question} onChange={e=>setQuestion(e.target.value)} placeholder="Ask a farming question..." aria-label="Ask a farming question"/><button className="send-button" aria-label="Send question" disabled={busy||!question.trim()}><Send size={17}/></button></form><div className="chat-disclaimer"><ShieldCheck size={13}/> AI responses are general guidance, can be inaccurate, and are not a diagnosis. For serious crop or livestock concerns, consult an agricultural extension officer.</div></div><aside className="ai-aside"><div className="ai-aside-card"><div className="aside-sun"><Sun size={19}/></div><span>FARMING TIP</span><h3>Small steps make a big difference.</h3><p>Keep a simple record of planting dates, rainfall and inputs. It can help you plan more confidently next season.</p><small>General suggestion · Adapt to your farm</small></div><div className="ai-topics"><h3>Explore a topic</h3>{[['Crops & planting',Wheat],['Soil & nutrients',Leaf],['Pests & diseases',CircleAlert],['Livestock care',Sprout],['Weather & planning',CloudSun]].map(([t,I]:any)=><button key={t} onClick={()=>setQuestion(`Help me with ${t.toLowerCase()} for my farm.`)}><I size={16}/>{t}<ChevronRight size={14}/></button>)}</div><div className="extension-note"><MapPin/><p><b>Need local advice?</b><br/>Your nearest agricultural extension officer can help with farm-specific recommendations.</p></div></aside></div></>}
+  const initials = profile?.full_name
+    ? profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+    : (user?.email?.slice(0, 2).toUpperCase() || 'FL');
+  const displayName = profile?.full_name || (user as any)?.displayName || user?.email?.split('@')[0] || 'Farmer';
+
+  const sections = [
+    { num: '01', icon: 'Store', label: 'Market Place', desc: 'Browse, buy and sell fresh produce with verified farmers across Zimbabwe.', to: '/marketplace', color: 'green' },
+    { num: '02', icon: 'UserRound', label: 'Profile', desc: 'Manage your farmer identity, farm details, and public listing information.', to: '/profile', color: 'blue' },
+    { num: '03', icon: 'Settings', label: 'Settings', desc: 'Control your account preferences, notifications, security, and app display.', to: '/settings', color: 'gray' },
+    { num: '04', icon: 'LayoutDashboard', label: 'Farm Tools', desc: 'Smart farming suite — weather forecast, crop health and AI assistance in one place.', to: '/farm-tools', color: 'forest', group: 'Farm Tools' },
+    { num: '05', icon: 'CloudSun', label: 'Weather Forecast', desc: 'Real-time agro-weather reports, 7-day outlook, rainfall and spray conditions.', to: '/farm-tools?tool=weather', color: 'orange', group: 'Farm Tools' },
+    { num: '06', icon: 'ScanLine', label: 'Crop Health', desc: 'Scan crop leaves with your camera to detect diseases and get treatment plans.', to: '/farm-tools?tool=crop-health', color: 'emerald', group: 'Farm Tools' },
+    { num: '07', icon: 'Bot', label: 'AI Assistance', desc: 'Your 24/7 AI agronomist — ask about planting, soil, pests and crop planning.', to: '/farm-tools?tool=assistant', color: 'purple', group: 'Farm Tools', badge: 'AI' },
+  ];
+
+  const iconMap: Record<string, JSX.Element> = {
+    Store: <Store size={26} />, UserRound: <UserRound size={26} />, Settings: <Settings size={26} />,
+    LayoutDashboard: <LayoutDashboard size={26} />, CloudSun: <CloudSun size={26} />, ScanLine: <ScanLine size={26} />, Bot: <Bot size={26} />,
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/login');
+  };
+
+  return (
+    <>
+      <PageTitle kicker="YOUR FARM WORKSPACE" title="Dashboard" sub="Seven sections to run your farm — market, profile, settings, farm tools and more." />
+      <div className="welcome-row">
+        <div>
+          <div className="welcome-date"><Sun size={15} /> {new Intl.DateTimeFormat('en-GB',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(new Date()).toUpperCase()} <span>·</span> GROWING SEASON</div>
+          <h1>Good day, {displayName} <span className="wave">✳</span></h1>
+          <p>Your FarmLink AI workspace — 7 sections at a glance.</p>
+        </div>
+        <div className="welcome-actions">
+          <Link to="/listing/new" className="btn btn-primary"><Plus size={16} /> Add a product</Link>
+          <button type="button" className="btn btn-outline" onClick={handleSignOut}><LogOut size={16} /> Log out</button>
+        </div>
+      </div>
+
+      <div className="section-intro"><span className="section-kicker">FARM SECTIONS</span><h2>Open a section</h2><p>Tap any section to go straight to it. Weather, Crop Health and AI Assistance live inside Farm Tools.</p></div>
+
+      {/* 7-Section Navigation Grid */}
+      <div className="dash-section-grid">
+        {sections.map(s => (
+          <Link key={s.num} to={s.to} className={`dash-section-card color-${s.color}`}>
+            <div className="dsc-header">
+              <div className={`dsc-icon bg-${s.color}`}>{iconMap[s.icon]}</div>
+              <span className="dsc-num">{s.num}</span>
+              {'badge' in s && s.badge && <span className="new-pill">{s.badge as string}</span>}
+            </div>
+            {'group' in s && s.group && <div className="dsc-parent">{s.group}</div>}
+            <h3 className="dsc-label">{s.label}</h3>
+            <p className="dsc-desc">{s.desc}</p>
+            <span className="dsc-cta">Open <ArrowUpRight size={13} /></span>
+          </Link>
+        ))}
+      </div>
+
+      <div className="metric-row">
+        <Metric icon={<ShoppingBag size={18} />} label="Marketplace listings" value={String(products.length)} foot="Active produce & inputs" tint="green" />
+        <Metric icon={<CloudSun size={18} />} label="Farm tools" value="3" foot="Weather · Crop health · AI" tint="orange" />
+        <Metric icon={<BarChart3 size={18} />} label="Price insights" value={String(marketPrices.length)} foot="Regional market prices" tint="blue" />
+      </div>
+    </>
+  );
+}
+
+export function Assistant(){const [question,setQuestion]=useState(''),[busy,setBusy]=useState(false),[conversationId,setConversationId]=useState(''),[messages,setMessages]=useState<{role:string;text:string}[]>([]);async function submit(e:FormEvent){e.preventDefault();if(!question.trim())return;const text=question;setQuestion('');setMessages(m=>[...m,{role:'user',text}]);setBusy(true);try{const out=await api<{answer:string;conversationId:string}>('/ai/chat',{method:'POST',body:JSON.stringify({message:text,...(conversationId?{conversationId}:{})})});setConversationId(out.conversationId);setMessages(m=>[...m,{role:'assistant',text:out.answer}]);}catch(e){setMessages(m=>[...m,{role:'assistant',text:e instanceof Error?e.message:'The AI service is not connected yet. Add an AI provider on the server to receive farming guidance.'}]);}finally{setBusy(false)}}const prompts=['When should I plant maize in Mashonaland?','How can I improve soil health naturally?','What are signs of fall armyworm?','Help me plan a crop rotation'];return <><PageTitle kicker="YOUR FARMING COMPANION" title="AI Farming Assistant" sub="Ask questions about crops, soil, livestock and farm planning."/><div className="ai-layout"><div className="ai-chat panel"><div className="chat-top"><div className="bot-avatar"><Bot size={20}/></div><div><b>FarmLink AI</b><span><i/> General farming guidance</span></div><button className="icon-button" onClick={()=>{setMessages([]);setConversationId('')}} title="Clear conversation"><MoreHorizontal size={19}/></button></div><div className="chat-messages">{messages.length===0?<div className="chat-welcome"><div className="welcome-bot"><Sprout size={25}/></div><span className="section-kicker">HERE TO HELP YOU GROW</span><h2>Whatâ€™s on your mind, James?</h2><p>Ask a question about your farm and Iâ€™ll help you think through the next step.</p><div className="suggestions">{prompts.map((s,i)=><button key={s} onClick={()=>setQuestion(s)}><span>{[<Wheat/>,<Leaf/>,<CircleAlert/>,<CalendarDays/>][i]}</span>{s}<ArrowUpRight size={13}/></button>)}</div></div>:messages.map((m,i)=><div className={`chat-message ${m.role}`} key={i}>{m.role==='assistant'&&<div className="message-avatar"><Sprout size={15}/></div>}<div className="bubble">{m.text}</div></div>)}{busy&&<div className="chat-message assistant"><div className="message-avatar"><Sprout size={15}/></div><div className="bubble typing"><i/><i/><i/></div></div>}</div><form className="chat-input" onSubmit={submit}><input value={question} onChange={e=>setQuestion(e.target.value)} placeholder="Ask a farming question..." aria-label="Ask a farming question"/><button className="send-button" aria-label="Send question" disabled={busy||!question.trim()}><Send size={17}/></button></form><div className="chat-disclaimer"><ShieldCheck size={13}/> AI responses are general guidance, can be inaccurate, and are not a diagnosis. For serious crop or livestock concerns, consult an agricultural extension officer.</div></div><aside className="ai-aside"><div className="ai-aside-card"><div className="aside-sun"><Sun size={19}/></div><span>FARMING TIP</span><h3>Small steps make a big difference.</h3><p>Keep a simple record of planting dates, rainfall and inputs. It can help you plan more confidently next season.</p><small>General suggestion Â· Adapt to your farm</small></div><div className="ai-topics"><h3>Explore a topic</h3>{[['Crops & planting',Wheat],['Soil & nutrients',Leaf],['Pests & diseases',CircleAlert],['Livestock care',Sprout],['Weather & planning',CloudSun]].map(([t,I]:any)=><button key={t} onClick={()=>setQuestion(`Help me with ${t.toLowerCase()} for my farm.`)}><I size={16}/>{t}<ChevronRight size={14}/></button>)}</div><div className="extension-note"><MapPin/><p><b>Need local advice?</b><br/>Your nearest agricultural extension officer can help with farm-specific recommendations.</p></div></aside></div></>}
 function playTimerChime() {
   try {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
@@ -149,7 +193,7 @@ export function Tasks(){
           if (prev <= 1) {
             setFieldTimerRunning(false);
             playTimerChime();
-            setFieldTimerAlert(`🔔 Time's up for ${fieldTimerName}!`);
+            setFieldTimerAlert(`ðŸ”” Time's up for ${fieldTimerName}!`);
             return 0;
           }
           return prev - 1;
@@ -324,7 +368,7 @@ export function Tasks(){
             {fmtTimer(fieldTimerSec)}
           </div>
           <span style={{fontSize:'12px',opacity:.8}}>
-            {fieldTimerRunning ? '⏱️ Running fieldwork cycle...' : fieldTimerSec === 0 ? '🔔 Cycle complete!' : 'Paused / Ready'}
+            {fieldTimerRunning ? 'â±ï¸ Running fieldwork cycle...' : fieldTimerSec === 0 ? 'ðŸ”” Cycle complete!' : 'Paused / Ready'}
           </span>
         </div>
 
@@ -369,12 +413,12 @@ export function Tasks(){
         <div style={{fontSize:'11px',fontWeight:700,opacity:.8,marginBottom:'8px',letterSpacing:'.5px'}}>QUICK FIELDWORK PRESETS:</div>
         <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
           {[
-            { name: '💧 Drip Irrigation', mins: 30 },
-            { name: '🚜 Spray Mixing', mins: 15 },
-            { name: '🌿 Greenhouse Vent', mins: 45 },
-            { name: '🧪 Fertilizer Soaking', mins: 20 },
-            { name: '🍅 Scouting Interval', mins: 25 },
-            { name: '🧺 1 Hour Fieldwork', mins: 60 },
+            { name: 'ðŸ’§ Drip Irrigation', mins: 30 },
+            { name: 'ðŸšœ Spray Mixing', mins: 15 },
+            { name: 'ðŸŒ¿ Greenhouse Vent', mins: 45 },
+            { name: 'ðŸ§ª Fertilizer Soaking', mins: 20 },
+            { name: 'ðŸ… Scouting Interval', mins: 25 },
+            { name: 'ðŸ§º 1 Hour Fieldwork', mins: 60 },
           ].map(p => (
             <button
               key={p.name}
@@ -451,7 +495,7 @@ export function Tasks(){
           </div>
         </div>
         <div style={{display:'flex',gap:'10px'}}>
-          <button type="submit" disabled={busy} className="btn btn-primary">{busy?'Saving…':'Save task'}</button>
+          <button type="submit" disabled={busy} className="btn btn-primary">{busy?'Savingâ€¦':'Save task'}</button>
           <button type="button" onClick={()=>setShowAdd(false)} className="btn btn-outline">Cancel</button>
         </div>
       </form>
@@ -474,7 +518,7 @@ export function Tasks(){
       </div>
 
       {loading ? (
-        <p style={{padding:'20px'}}>Loading your tasks…</p>
+        <p style={{padding:'20px'}}>Loading your tasksâ€¦</p>
       ) : tasks.length === 0 ? (
         <p style={{padding:'24px',color:'#666'}}>No tasks yet. Click "Add a task" above to start your seasonal checklist.</p>
       ) : (
@@ -571,7 +615,7 @@ export function Tasks(){
 
                     {timer.isFinished && (
                       <span style={{fontSize:'11px',fontWeight:700,color:'#856404',background:'#fff3cd',padding:'3px 8px',borderRadius:'6px'}}>
-                        🔔 Time's Up! Cycle complete.
+                        ðŸ”” Time's Up! Cycle complete.
                       </span>
                     )}
                   </div>
@@ -722,8 +766,8 @@ export function Weather(){
   }
 
   function fmtTime(isoStr?:string){
-    if(!isoStr) return '—';
-    try{ return new Date(isoStr).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); } catch{ return '—'; }
+    if(!isoStr) return 'â€”';
+    try{ return new Date(isoStr).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); } catch{ return 'â€”'; }
   }
 
   const rainColor = (p:number) => p>70?'#c0392b':p>40?'#e67e22':'#27ae60';
@@ -736,17 +780,17 @@ export function Weather(){
       <div style={{display:'flex',alignItems:'center',gap:'12px',flexWrap:'wrap',marginBottom:'14px'}}>
         <MapPin size={18} color="#087443"/>
         <h2 style={{margin:0,fontSize:'16px'}}>
-          {loading ? 'Fetching…' : weatherData?.city?.name ? `📍 ${weatherData.city.name}, Zimbabwe` : location}
+          {loading ? 'Fetchingâ€¦' : weatherData?.city?.name ? `ðŸ“ ${weatherData.city.name}, Zimbabwe` : location}
         </h2>
         {lastUpdated && <span style={{fontSize:'11px',color:'#7a9a85',marginLeft:'auto'}}>Updated {lastUpdated.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span>}
         <button className="btn btn-outline" style={{fontSize:'12px',padding:'5px 12px'}} onClick={()=>fetchWeather(location)} disabled={loading}>
-          {loading ? '…' : '↻ Refresh'}
+          {loading ? 'â€¦' : 'â†» Refresh'}
         </button>
       </div>
       <form onSubmit={handleSearch} style={{display:'flex',gap:'8px',marginBottom:'14px'}}>
         <div className="search-wrap" style={{flex:1,margin:0}}>
           <Search size={16}/>
-          <input value={inputVal} onChange={e=>setInputVal(e.target.value)} placeholder="Type a Zimbabwe city…" list="zw-cities" aria-label="Weather location"/>
+          <input value={inputVal} onChange={e=>setInputVal(e.target.value)} placeholder="Type a Zimbabwe cityâ€¦" list="zw-cities" aria-label="Weather location"/>
           <datalist id="zw-cities">{ZW_CITIES.map(c=><option key={c} value={c}/>)}</datalist>
         </div>
         <button type="submit" className="btn btn-primary" disabled={loading} style={{whiteSpace:'nowrap'}}>Get Forecast</button>
@@ -760,25 +804,25 @@ export function Weather(){
           </button>
         ))}
       </div>
-      {error && <p style={{color:'#c0392b',fontSize:'13px',marginTop:'10px'}}>⚠️ {error}</p>}
+      {error && <p style={{color:'#c0392b',fontSize:'13px',marginTop:'10px'}}>âš ï¸ {error}</p>}
     </div>
 
     {/* Current conditions hero */}
     {cur && (
       <div style={{background:'linear-gradient(135deg,#0d5c35 0%,#19804d 60%,#1aad62 100%)',borderRadius:'16px',padding:'28px',marginBottom:'20px',color:'#fff',display:'flex',alignItems:'center',gap:'24px',flexWrap:'wrap'}}>
-        <div style={{fontSize:'64px',lineHeight:1}}>{cur.emoji ?? '🌤️'}</div>
+        <div style={{fontSize:'64px',lineHeight:1}}>{cur.emoji ?? 'ðŸŒ¤ï¸'}</div>
         <div style={{flex:1}}>
           <div style={{fontSize:'12px',fontWeight:700,letterSpacing:'1.5px',opacity:.75,marginBottom:'4px'}}>
-            CURRENT CONDITIONS · {(weatherData?.city?.name||location).toUpperCase()}
+            CURRENT CONDITIONS Â· {(weatherData?.city?.name||location).toUpperCase()}
           </div>
-          <div style={{fontSize:'52px',fontWeight:900,lineHeight:1}}>{cur.temp}°<span style={{fontSize:'24px'}}>C</span></div>
-          <div style={{fontSize:'15px',opacity:.85}}>{cur.condition} · Feels like {cur.feels_like}°C</div>
+          <div style={{fontSize:'52px',fontWeight:900,lineHeight:1}}>{cur.temp}Â°<span style={{fontSize:'24px'}}>C</span></div>
+          <div style={{fontSize:'15px',opacity:.85}}>{cur.condition} Â· Feels like {cur.feels_like}Â°C</div>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'12px',minWidth:'240px'}}>
           {[
-            {icon:'💨',label:'Wind',val:`${cur.wind_speed} km/h`},
-            {icon:'💧',label:'Humidity',val:`${cur.humidity}%`},
-            {icon:'🌧️',label:'Rain chance',val:`${cur.rain_chance}%`},
+            {icon:'ðŸ’¨',label:'Wind',val:`${cur.wind_speed} km/h`},
+            {icon:'ðŸ’§',label:'Humidity',val:`${cur.humidity}%`},
+            {icon:'ðŸŒ§ï¸',label:'Rain chance',val:`${cur.rain_chance}%`},
           ].map(s=>(
             <div key={s.label} style={{background:'rgba(255,255,255,.15)',borderRadius:'10px',padding:'10px',textAlign:'center'}}>
               <div style={{fontSize:'18px'}}>{s.icon}</div>
@@ -789,7 +833,7 @@ export function Weather(){
         </div>
         {cur.advisory && (
           <div style={{width:'100%',background:'rgba(255,255,255,.12)',borderRadius:'10px',padding:'12px 14px',fontSize:'13px',display:'flex',gap:'8px',alignItems:'flex-start'}}>
-            <span style={{fontSize:'16px'}}>🌱</span>
+            <span style={{fontSize:'16px'}}>ðŸŒ±</span>
             <span><b>Farm advisory:</b> {cur.advisory}</span>
           </div>
         )}
@@ -816,8 +860,8 @@ export function Weather(){
                 }}>
                 <span style={{fontSize:'10px',fontWeight:700,opacity:.75}}>{dayName}</span>
                 <span style={{fontSize:'18px'}}>{day.emoji}</span>
-                <span style={{fontSize:'13px',fontWeight:800}}>{day.temp_max}°</span>
-                <span style={{fontSize:'10px',opacity:.65}}>{day.temp_min}°</span>
+                <span style={{fontSize:'13px',fontWeight:800}}>{day.temp_max}Â°</span>
+                <span style={{fontSize:'10px',opacity:.65}}>{day.temp_min}Â°</span>
                 <span style={{fontSize:'10px',color:isSelected?'rgba(255,255,255,.8)':rainColor(day.rain_chance),fontWeight:600}}>{day.rain_chance}%</span>
                 <span style={{fontSize:'9px',opacity:.6}}>{dateLabel}</span>
               </button>
@@ -835,18 +879,18 @@ export function Weather(){
           <div style={{display:'flex',gap:'12px',alignItems:'center',marginBottom:'16px'}}>
             <span style={{fontSize:'40px'}}>{selected.emoji}</span>
             <div>
-              <div style={{fontSize:'11px',fontWeight:700,color:'#087443',letterSpacing:'1px'}}>{fmtDate(selected.date).day.toUpperCase()} · {fmtDate(selected.date).date}</div>
-              <div style={{fontSize:'28px',fontWeight:900,color:'#0d2e1f'}}>{selected.temp_max}° / {selected.temp_min}°<span style={{fontSize:'14px'}}>C</span></div>
+              <div style={{fontSize:'11px',fontWeight:700,color:'#087443',letterSpacing:'1px'}}>{fmtDate(selected.date).day.toUpperCase()} Â· {fmtDate(selected.date).date}</div>
+              <div style={{fontSize:'28px',fontWeight:900,color:'#0d2e1f'}}>{selected.temp_max}Â° / {selected.temp_min}Â°<span style={{fontSize:'14px'}}>C</span></div>
               <div style={{fontSize:'13px',color:'#4a5e52'}}>{selected.condition}</div>
             </div>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
             {[
-              {emoji:'💨',label:'Wind speed',val:`${selected.wind_speed} km/h`},
-              {emoji:'💧',label:'Humidity',val:`${selected.humidity}%`},
-              {emoji:'🌧️',label:'Rain chance',val:`${selected.rain_chance}%`,color:rainColor(selected.rain_chance)},
-              {emoji:'🌅',label:'Sunrise',val:fmtTime(selected.sunrise)},
-              {emoji:'🌇',label:'Sunset',val:fmtTime(selected.sunset)},
+              {emoji:'ðŸ’¨',label:'Wind speed',val:`${selected.wind_speed} km/h`},
+              {emoji:'ðŸ’§',label:'Humidity',val:`${selected.humidity}%`},
+              {emoji:'ðŸŒ§ï¸',label:'Rain chance',val:`${selected.rain_chance}%`,color:rainColor(selected.rain_chance)},
+              {emoji:'ðŸŒ…',label:'Sunrise',val:fmtTime(selected.sunrise)},
+              {emoji:'ðŸŒ‡',label:'Sunset',val:fmtTime(selected.sunset)},
             ].map(s=>(
               <div key={s.label} style={{background:'#fff',borderRadius:'8px',padding:'10px',display:'flex',gap:'8px',alignItems:'center'}}>
                 <span>{s.emoji}</span>
@@ -861,7 +905,7 @@ export function Weather(){
         {/* Advisory card */}
         <div className="panel" style={{background:'linear-gradient(135deg,#eaf4ed,#d4ecda)',display:'flex',flexDirection:'column',gap:'12px'}}>
           <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
-            <span style={{fontSize:'24px'}}>🌱</span>
+            <span style={{fontSize:'24px'}}>ðŸŒ±</span>
             <div>
               <div style={{fontSize:'11px',fontWeight:700,color:'#087443',letterSpacing:'1px'}}>FARM ADVISORY</div>
               <div style={{fontSize:'14px',fontWeight:700,color:'#0d2e1f'}}>{fmtDate(selected.date).day}</div>
@@ -872,7 +916,7 @@ export function Weather(){
             <ShieldCheck size={13}/> Based on live Open-Meteo forecast data
           </div>
           {weatherData?.provider && (
-            <div style={{fontSize:'10px',color:'#7a9a85'}}>Source: {weatherData.provider} · {weatherData.fetched_at ? new Date(weatherData.fetched_at).toLocaleString('en-GB') : ''}</div>
+            <div style={{fontSize:'10px',color:'#7a9a85'}}>Source: {weatherData.provider} Â· {weatherData.fetched_at ? new Date(weatherData.fetched_at).toLocaleString('en-GB') : ''}</div>
           )}
         </div>
       </div>
@@ -880,7 +924,7 @@ export function Weather(){
 
     {!weatherData && !loading && (
       <div className="panel" style={{textAlign:'center',padding:'40px'}}>
-        <div style={{fontSize:'48px',marginBottom:'12px'}}>🌤️</div>
+        <div style={{fontSize:'48px',marginBottom:'12px'}}>ðŸŒ¤ï¸</div>
         <h3>Enter a Zimbabwe city above to load the forecast</h3>
       </div>
     )}
@@ -891,7 +935,7 @@ export function Weather(){
       <div>
         <span className="section-kicker">FARMING WITH THE WEATHER</span>
         <h3>Make weather work for your farm</h3>
-        <p>Plan irrigation, planting, and spraying around forecasted conditions. Checking 3–5 days ahead helps you prepare for rain events and dry spells.</p>
+        <p>Plan irrigation, planting, and spraying around forecasted conditions. Checking 3â€“5 days ahead helps you prepare for rain events and dry spells.</p>
       </div>
       <span className="general-label">General guidance</span>
     </section>
@@ -1031,7 +1075,7 @@ export function Prices() {
       {/* BENCHMARK CARDS GRID */}
       {loading ? (
         <div className="panel" style={{ textAlign: 'center', padding: '40px' }}>
-          <p>Loading verified commodity market prices…</p>
+          <p>Loading verified commodity market pricesâ€¦</p>
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState
@@ -1077,7 +1121,7 @@ export function Prices() {
                     </span>
                     <h3 style={{ margin: '4px 0 2px', fontSize: '18px', color: '#132c1e' }}>{p.crop}</h3>
                     <div style={{ fontSize: '12px', color: '#687e70', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <MapPin size={13} /> {p.market} · {p.city}
+                      <MapPin size={13} /> {p.market} Â· {p.city}
                     </div>
                   </div>
 
@@ -1128,7 +1172,7 @@ export function Prices() {
 
                 {p.advisory && (
                   <p style={{ margin: 0, fontSize: '12px', color: '#2c4a37', lineHeight: 1.5, background: '#fafdfa', padding: '8px 10px', borderRadius: '6px', borderLeft: '3px solid #148f52' }}>
-                    💡 {p.advisory}
+                    ðŸ’¡ {p.advisory}
                   </p>
                 )}
               </div>
@@ -1204,7 +1248,7 @@ export function Prices() {
   );
 }
 export function Profile() {
-  const { user, profile, updateProfile } = useAuth();
+  const { user, profile, updateProfile, signOut } = useAuth();
 
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -1279,21 +1323,32 @@ export function Profile() {
         title="Farm & Account Profile"
         sub="Manage your personal details, farm specifications, and public contact information for buyers."
         action={
-          <button
-            className={`btn ${isEditing ? 'btn-outline' : 'btn-primary'}`}
-            onClick={() => setIsEditing(!isEditing)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-          >
-            {isEditing ? (
-              <>
-                <X size={15} /> Cancel Editing
-              </>
-            ) : (
-              <>
-                <Edit3 size={15} /> Edit Profile
-              </>
-            )}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              className={`btn ${isEditing ? 'btn-outline' : 'btn-primary'}`}
+              onClick={() => setIsEditing(!isEditing)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              {isEditing ? (
+                <>
+                  <X size={15} /> Cancel Editing
+                </>
+              ) : (
+                <>
+                  <Edit3 size={15} /> Edit Profile
+                </>
+              )}
+            </button>
+            <button
+              onClick={async () => {
+                await signOut();
+              }}
+              className="btn btn-outline"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <LogOut size={15} /> Log out
+            </button>
+          </div>
         }
       />
 
@@ -1443,7 +1498,7 @@ export function Profile() {
 
             <div style={{ display: 'flex', gap: '10px' }}>
               <button type="submit" disabled={saving} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                <Save size={16} /> {saving ? 'Saving Changes…' : 'Save Profile'}
+                <Save size={16} /> {saving ? 'Saving Changesâ€¦' : 'Save Profile'}
               </button>
               <button type="button" onClick={() => setIsEditing(false)} className="btn btn-outline">
                 Cancel
@@ -1493,7 +1548,7 @@ export function Profile() {
                   <div>
                     <h2 style={{ margin: '0 0 2px', fontSize: '22px', color: '#102d1d' }}>{fullName}</h2>
                     <span style={{ fontSize: '13px', fontWeight: 600, color: '#087443', textTransform: 'capitalize' }}>
-                      {role} {farmName ? `· ${farmName}` : ''}
+                      {role} {farmName ? `Â· ${farmName}` : ''}
                     </span>
                   </div>
                 </div>
@@ -1628,3 +1683,4 @@ export function MyProducts() {
     </>
   );
 }
+
